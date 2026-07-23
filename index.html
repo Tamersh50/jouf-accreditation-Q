@@ -1,0 +1,2043 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>سجل اعتماد البرامج الأكاديمية — جامعة الجوف</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ink:#14231F;
+  --ink-2:#3D5049;
+  --ink-3:#6B7C76;
+  --paper:#F3F5F4;
+  --card:#FFFFFF;
+  --line:#DDE4E1;
+  --brand:#0F4C42;
+  --brand-2:#0B382F;
+  --brand-soft:#E3EEEB;
+  --gold:#B98A2F;
+  --gold-soft:#F6EEDD;
+  --ok:#1C7C4A;      --ok-bg:#E2F2E8;
+  --warn:#B07612;    --warn-bg:#FBF0D9;
+  --bad:#B3372F;     --bad-bg:#F9E5E3;
+  --mute:#5E6B66;    --mute-bg:#ECEFEE;
+  --info:#245C8D;    --info-bg:#E3EDF6;
+  --r:14px;
+  --shadow:0 1px 2px rgba(20,35,31,.05),0 6px 18px rgba(20,35,31,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:"IBM Plex Sans Arabic","Tajawal",system-ui,sans-serif;
+  background:var(--paper);color:var(--ink);
+  font-size:14.5px;line-height:1.65;
+}
+h1,h2,h3,.disp{font-family:"Tajawal",sans-serif}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:13.5px}
+
+/* ======= الرأس ======= */
+.topbar{
+  background:linear-gradient(135deg,var(--brand-2) 0%,var(--brand) 55%,#166355 100%);
+  color:#fff;padding:0;position:relative;overflow:hidden;
+}
+.topbar::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:
+    radial-gradient(600px 220px at 12% -40%,rgba(255,255,255,.10),transparent 60%),
+    repeating-linear-gradient(45deg,rgba(255,255,255,.025) 0 2px,transparent 2px 14px);
+}
+.topbar-inner{
+  max-width:1420px;margin:0 auto;padding:26px 28px 0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap;
+  position:relative;z-index:1;
+}
+.brand-block{display:flex;gap:16px;align-items:center}
+.seal{
+  width:58px;height:58px;border-radius:50%;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.55);
+  display:grid;place-items:center;position:relative;
+  background:rgba(255,255,255,.08);
+}
+.seal::before{content:"";position:absolute;inset:5px;border-radius:50%;border:1px dashed rgba(255,255,255,.45)}
+.seal svg{width:28px;height:28px}
+.brand-txt .eyebrow{
+  font-size:11px;letter-spacing:.14em;opacity:.85;font-weight:500;
+}
+.brand-txt h1{font-size:24px;font-weight:900;line-height:1.35;margin-top:2px}
+.brand-txt .sub{font-size:12.5px;opacity:.8;margin-top:2px}
+.top-meta{display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding-top:4px}
+.folder-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);
+  color:#fff;border-radius:99px;padding:7px 15px;font-size:12.5px;font-weight:500;
+  transition:.2s;
+}
+.folder-chip:hover{background:rgba(255,255,255,.22)}
+.folder-chip .dot{width:8px;height:8px;border-radius:50%;background:#F0B429}
+.folder-chip.on .dot{background:#4ADE80}
+.date-line{font-size:11.5px;opacity:.75}
+
+.tabs{
+  max-width:1420px;margin:22px auto 0;padding:0 28px;display:flex;gap:4px;
+  position:relative;z-index:1;
+}
+.tab-btn{
+  background:rgba(255,255,255,.10);color:rgba(255,255,255,.85);border:none;
+  border-radius:12px 12px 0 0;padding:12px 26px;font-size:14.5px;font-weight:700;
+  display:flex;align-items:center;gap:8px;transition:.18s;
+}
+.tab-btn:hover{background:rgba(255,255,255,.2)}
+.tab-btn.active{background:var(--paper);color:var(--brand)}
+.tab-btn .cnt{font-size:11px;background:var(--gold);color:#fff;border-radius:99px;padding:1px 8px}
+.tab-btn.active .cnt{background:var(--brand)}
+
+/* ======= الحاوية ======= */
+.wrap{max-width:1420px;margin:0 auto;padding:24px 28px 60px}
+.tab-page{display:none}
+.tab-page.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ======= بطاقات KPI ======= */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:14px;margin-bottom:22px}
+.kpi{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:16px 18px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--kc,var(--brand))}
+.kpi .k-num{font-family:"Tajawal";font-size:30px;font-weight:900;color:var(--kc,var(--brand));line-height:1.1}
+.kpi .k-lbl{font-size:12.5px;color:var(--ink-2);font-weight:500;margin-top:2px}
+.kpi .k-sub{font-size:11px;color:var(--ink-3);margin-top:1px}
+
+/* ======= تنبيهات ======= */
+.alert-strip{
+  background:var(--warn-bg);border:1px solid #EBD9AC;border-radius:var(--r);
+  padding:13px 18px;margin-bottom:22px;display:flex;gap:12px;align-items:flex-start;
+}
+.alert-strip.red{background:var(--bad-bg);border-color:#EBC2BE}
+.alert-strip.purple{background:#F0EAF7;border-color:#D8C8EC}
+.alert-strip .ai{font-size:18px;line-height:1.3}
+.alert-strip b{font-weight:700}
+.alert-strip .a-list{font-size:12.5px;color:var(--ink-2);margin-top:3px}
+.alert-strip .a-item{display:inline-block;background:#fff;border:1px solid var(--line);border-radius:8px;padding:2px 10px;margin:3px 0 0 6px}
+
+/* ======= الرسوم ======= */
+.charts{display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:14px;margin-bottom:24px}
+.chart-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow)}
+.chart-card h3{font-size:14px;font-weight:800;color:var(--brand-2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.chart-card h3::before{content:"";width:8px;height:8px;border-radius:2px;background:var(--gold);display:inline-block}
+.chart-box{position:relative;height:230px}
+@media(max-width:1100px){.charts{grid-template-columns:1fr 1fr}.charts .chart-card:first-child{grid-column:1/-1}}
+@media(max-width:640px){.charts{grid-template-columns:1fr}}
+
+/* ======= الفلاتر ======= */
+.filters{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 18px;margin-bottom:16px;box-shadow:var(--shadow);
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+.filters select,.filters input[type=search]{
+  border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#FBFCFC;color:var(--ink);
+  min-width:140px;outline:none;transition:.15s;
+}
+.filters select:focus,.filters input:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.filters input[type=search]{flex:1;min-width:200px}
+.btn{
+  border:none;border-radius:9px;padding:9px 18px;font-size:13px;font-weight:700;
+  display:inline-flex;align-items:center;gap:7px;transition:.18s;
+}
+.btn-brand{background:var(--brand);color:#fff}
+.btn-brand:hover{background:var(--brand-2)}
+.btn-ghost{background:var(--brand-soft);color:var(--brand)}
+.btn-ghost:hover{background:#D4E4DF}
+.btn-gold{background:var(--gold);color:#fff}
+.btn-gold:hover{background:#9C7326}
+.btn-line{background:#fff;color:var(--ink-2);border:1px solid var(--line)}
+.btn-line:hover{border-color:var(--brand);color:var(--brand)}
+.btn-danger{background:var(--bad-bg);color:var(--bad)}
+.btn-danger:hover{background:#F2D3D0}
+.btn-sm{padding:5px 12px;font-size:12px;border-radius:8px}
+.result-count{font-size:12.5px;color:var(--ink-3);margin:0 4px 10px;font-weight:500}
+
+/* ======= الجدول الرئيسي ======= */
+.tbl-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.tbl-scroll{overflow-x:auto}
+table.main{width:100%;border-collapse:collapse;min-width:1150px}
+table.main thead th{
+  background:var(--brand);color:#fff;font-size:12.5px;font-weight:700;
+  padding:11px 12px;text-align:right;white-space:nowrap;position:sticky;top:0;z-index:2;
+}
+table.main thead th.grp{background:var(--brand-2);text-align:center;border-bottom:1px solid rgba(255,255,255,.25)}
+table.main thead tr.sub th{background:#135A4E;font-weight:500;font-size:11.5px;text-align:center}
+table.main tbody td{
+  padding:10px 12px;border-bottom:1px solid var(--line);font-size:13px;vertical-align:middle;
+}
+table.main tbody tr:hover{background:#F6FAF8}
+table.main tbody tr:last-child td{border-bottom:none}
+.prog-name{font-weight:700;color:var(--brand-2)}
+.prog-college{font-size:11.5px;color:var(--ink-3)}
+.badge{
+  display:inline-block;border-radius:99px;padding:2px 11px;font-size:11.5px;font-weight:700;white-space:nowrap;
+}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-warn{background:var(--warn-bg);color:var(--warn)}
+.b-bad{background:var(--bad-bg);color:var(--bad)}
+.b-mute{background:var(--mute-bg);color:var(--mute)}
+.b-info{background:var(--info-bg);color:var(--info)}
+.b-gold{background:var(--gold-soft);color:var(--gold)}
+.exp-line{font-size:11px;margin-top:3px;color:var(--ink-3);white-space:nowrap}
+.exp-line.warn{color:var(--warn);font-weight:700}
+.exp-line.bad{color:var(--bad);font-weight:700}
+.cert-btn{
+  background:var(--gold-soft);color:var(--gold);border:1px solid #EAD9B4;border-radius:8px;
+  padding:5px 12px;font-size:12px;font-weight:700;display:inline-flex;gap:6px;align-items:center;transition:.15s;
+}
+.cert-btn:hover{background:var(--gold);color:#fff}
+.cert-btn.none{background:var(--mute-bg);color:var(--ink-3);border-color:var(--line)}
+.cert-btn.none:hover{background:#DFE4E2;color:var(--ink-2)}
+.cert-btn.miss{background:var(--bad-bg);color:var(--bad);border-color:#EBC2BE;animation:pulse 2.2s ease-in-out infinite}
+.cert-btn.miss:hover{background:var(--bad);color:#fff}
+.cert-btn.part{background:#F0EAF7;color:#7A4FA8;border-color:#D8C8EC}
+.cert-btn.part:hover{background:#7A4FA8;color:#fff}
+.cert-btn.full{background:var(--ok-bg);color:var(--ok);border-color:#C4E3D0}
+.cert-btn.full:hover{background:var(--ok);color:#fff}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(179,55,47,.25)}50%{box-shadow:0 0 0 5px rgba(179,55,47,0)}}
+@media(prefers-reduced-motion:reduce){.cert-btn.miss{animation:none}}
+.cert-dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.7}
+
+/* ======= الإعدادات ======= */
+.set-toolbar{
+  background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);
+  padding:14px 18px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+}
+.set-toolbar .sep{width:1px;align-self:stretch;background:var(--line);margin:0 4px}
+.save-state{font-size:12px;color:var(--ok);font-weight:700;margin-inline-start:auto;opacity:0;transition:.3s}
+.save-state.show{opacity:1}
+.folder-panel{
+  background:linear-gradient(135deg,#FBF7EE,#F6EEDD);border:1px solid #EAD9B4;border-radius:var(--r);
+  padding:16px 20px;margin-bottom:16px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;
+}
+.folder-panel .fp-txt{flex:1;min-width:260px}
+.folder-panel h3{font-size:14.5px;color:#7A5B1D;font-weight:800}
+.folder-panel p{font-size:12.5px;color:#8A7440;margin-top:2px}
+.folder-status{font-size:12px;font-weight:700;color:#7A5B1D;background:#fff;border:1px solid #EAD9B4;border-radius:8px;padding:4px 12px}
+table.edit{width:100%;border-collapse:collapse;min-width:1700px}
+table.edit thead th{
+  background:var(--brand);color:#fff;font-size:11.5px;font-weight:700;padding:9px 8px;text-align:center;white-space:nowrap;
+  position:sticky;top:0;z-index:2;
+}
+table.edit thead th.g2{background:var(--brand-2)}
+table.edit tbody td{padding:5px 5px;border-bottom:1px solid var(--line);text-align:center}
+table.edit tbody tr:nth-child(even){background:#F9FBFA}
+table.edit input,table.edit select{
+  width:100%;border:1px solid transparent;background:transparent;border-radius:7px;padding:6px 8px;
+  font-size:12.5px;color:var(--ink);outline:none;transition:.15s;text-align:right;
+}
+table.edit select{text-align:center;cursor:pointer}
+table.edit input[type=date]{text-align:center;min-width:118px}
+table.edit input:hover,table.edit select:hover{background:#fff;border-color:var(--line)}
+table.edit input:focus,table.edit select:focus{background:#fff;border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+table.edit .row-num{font-weight:800;color:var(--ink-3);font-size:12px}
+.up-cell{display:flex;gap:5px;justify-content:center;align-items:center;flex-wrap:wrap}
+.chip-file{
+  font-size:10.5px;background:var(--ok-bg);color:var(--ok);border-radius:6px;padding:2px 7px;font-weight:700;
+  display:inline-flex;gap:4px;align-items:center;
+}
+.chip-file button{background:none;border:none;color:var(--bad);font-weight:900;font-size:11px;padding:0 2px}
+
+/* ======= المودال ======= */
+.modal-bg{
+  position:fixed;inset:0;background:rgba(15,30,26,.55);backdrop-filter:blur(3px);
+  display:none;place-items:center;z-index:100;padding:20px;
+}
+.modal-bg.open{display:grid;animation:fadeUp .2s ease}
+.modal{
+  background:var(--card);border-radius:18px;width:min(1000px,96vw);max-height:92vh;
+  display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.3);
+}
+.modal-head{
+  background:var(--brand);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;
+}
+.modal-head h3{font-size:16px;font-weight:800}
+.modal-head .mh-sub{font-size:12px;opacity:.8;margin-top:1px}
+.modal-close{background:rgba(255,255,255,.15);border:none;color:#fff;width:32px;height:32px;border-radius:9px;font-size:16px;flex-shrink:0}
+.modal-close:hover{background:rgba(255,255,255,.3)}
+.modal-body{padding:18px 22px;overflow-y:auto;flex:1}
+.cert-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.cert-tab{
+  border:1px solid var(--line);background:#FBFCFC;border-radius:10px;padding:8px 16px;font-size:13px;font-weight:700;color:var(--ink-2);
+  display:inline-flex;gap:8px;align-items:center;transition:.15s;
+}
+.cert-tab:hover{border-color:var(--gold)}
+.cert-tab.active{background:var(--gold);border-color:var(--gold);color:#fff}
+.cert-frame{
+  width:100%;height:62vh;border:1px solid var(--line);border-radius:12px;background:#EDEFEF;
+}
+.cert-empty{
+  border:2px dashed var(--line);border-radius:12px;padding:50px 24px;text-align:center;color:var(--ink-3);
+}
+.cert-empty .ce-ico{font-size:34px;margin-bottom:8px}
+.cert-empty b{color:var(--ink-2)}
+.cert-empty .btn{margin-top:14px}
+.cert-actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+table.main thead th[data-key]{cursor:pointer;user-select:none;transition:.15s}
+table.main thead th[data-key]:hover{background:#166355}
+table.main thead th[data-key]::after{content:' ⇅';opacity:.45;font-size:10px}
+table.main thead th[data-key].s-asc::after{content:' ▲';opacity:1;font-size:9px}
+table.main thead th[data-key].s-desc::after{content:' ▼';opacity:1;font-size:9px}
+
+/* ======= اكتمال المستندات ======= */
+.docs-summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:18px}
+.dropzone{
+  border:2px dashed #D8C8EC;background:#FBF9FE;color:#7A4FA8;border-radius:10px;
+  padding:8px 14px;font-size:12.5px;font-weight:700;display:inline-flex;gap:8px;align-items:center;
+  cursor:pointer;transition:.18s;min-width:190px;justify-content:center;
+}
+.dropzone:hover{border-color:#7A4FA8;background:#F3EDFA}
+.dropzone.drag{border-color:var(--brand);background:var(--brand-soft);color:var(--brand);transform:scale(1.02)}
+.dropzone.busy{opacity:.6;pointer-events:none}
+.doc-src{font-size:10.5px;color:var(--ink-3)}
+.tab-btn .cnt.red{background:var(--bad)}
+.unmatched-box{
+  margin-top:16px;background:#F0EAF7;border:1px solid #D8C8EC;border-radius:var(--r);padding:14px 18px;font-size:12.5px;color:#5D3E85;
+}
+.unmatched-box b{display:block;margin-bottom:5px}
+.unmatched-box .a-item{display:inline-block;background:#fff;border:1px solid #D8C8EC;border-radius:8px;padding:2px 10px;margin:3px 0 0 6px;direction:ltr;text-align:right}
+
+/* ======= توست ======= */
+#toast{
+  position:fixed;bottom:26px;inset-inline-start:50%;transform:translateX(50%) translateY(20px);
+  background:var(--ink);color:#fff;border-radius:12px;padding:11px 22px;font-size:13.5px;font-weight:600;
+  opacity:0;pointer-events:none;transition:.3s;z-index:200;box-shadow:0 10px 30px rgba(0,0,0,.25);
+}
+#toast.show{opacity:1;transform:translateX(50%) translateY(0)}
+#toast.err{background:var(--bad)}
+
+/* ======= طباعة ======= */
+@media print{
+  .topbar,.tabs,.filters,.set-toolbar,.folder-panel,.no-print,.cert-btn,#toast{display:none !important}
+  body{background:#fff}
+  .wrap{padding:0;max-width:none}
+  .tbl-card,.kpi,.chart-card{box-shadow:none;border:1px solid #ccc}
+  .print-head{display:block !important;text-align:center;margin-bottom:16px;font-family:"Tajawal"}
+  table.main{min-width:0}
+  table.main thead th{background:#0F4C42 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .charts{display:none}
+}
+.print-head{display:none}
+@media(max-width:760px){
+  .topbar-inner{padding:20px 16px 0}
+  .wrap{padding:16px 14px 50px}
+  .tabs{padding:0 16px}
+  .tab-btn{padding:10px 16px;font-size:13px}
+  .brand-txt h1{font-size:19px}
+  .chart-box{height:200px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand-block">
+      <div class="seal">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 15l-2 5 2-1.5L14 20l-2-5z"/>
+          <circle cx="12" cy="9" r="6"/>
+          <path d="M9.5 9l1.8 1.8L15 7.2"/>
+        </svg>
+      </div>
+      <div class="brand-txt">
+        <div class="eyebrow">جامعة الجوف · وكالة الجامعة للشؤون الأكاديمية</div>
+        <h1>سجل اعتماد البرامج الأكاديمية</h1>
+        <div class="sub">الاعتماد البرامجي الوطني (NCAAA) والاعتمادات الدولية · قاعدة بيانات موحّدة مع أرشيف الشهادات</div>
+      </div>
+    </div>
+    <div class="top-meta">
+      <button class="folder-chip" id="folderChip" onclick="linkFolder()">
+        <span class="dot"></span><span id="folderChipTxt">ربط مجلد الشهادات</span>
+      </button>
+      <div class="date-line" id="todayLine"></div>
+    </div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" id="tabBtnView" onclick="switchTab('view')">
+      لوحة العرض <span class="cnt" id="cntView">0</span>
+    </button>
+    <button class="tab-btn" id="tabBtnDocs" onclick="switchTab('docs')">
+      اكتمال المستندات <span class="cnt" id="cntDocs">0</span>
+    </button>
+    <button class="tab-btn" id="tabBtnSettings" onclick="switchTab('settings')">
+      الإعدادات وإدارة البيانات
+    </button>
+  </nav>
+</header>
+
+<main class="wrap">
+
+<!-- ============ تبويب العرض ============ -->
+<section class="tab-page active" id="page-view">
+  <div class="print-head">
+    <h2 style="font-size:20px">جامعة الجوف — سجل اعتماد البرامج الأكاديمية</h2>
+    <div style="font-size:12px;color:#555" id="printDate"></div>
+  </div>
+
+  <div class="kpis" id="kpis"></div>
+  <div id="alertsArea"></div>
+
+  <div class="charts">
+    <div class="chart-card">
+      <h3>توزيع حالات الاعتماد البرامجي حسب الكلية</h3>
+      <div class="chart-box"><canvas id="chCollege"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>حالة الاعتماد البرامجي NCAAA</h3>
+      <div class="chart-box"><canvas id="chNcaaa"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <h3>جهات الاعتماد الدولي</h3>
+      <div class="chart-box"><canvas id="chIntl"></canvas></div>
+    </div>
+  </div>
+
+  <div class="filters no-print">
+    <select id="fCollege" onchange="renderView()"></select>
+    <select id="fDegree" onchange="renderView()"></select>
+    <select id="fEligibility" onchange="renderView()"></select>
+    <select id="fNcaaa" onchange="renderView()"></select>
+    <select id="fIntl" onchange="renderView()"></select>
+    <input type="search" id="fSearch" placeholder="🔎 بحث باسم البرنامج أو الكلية…" oninput="renderView()">
+    <button class="btn btn-line" onclick="resetFilters()">إعادة تعيين</button>
+    <button class="btn btn-ghost" onclick="window.print()">🖨️ طباعة</button>
+    <button class="btn btn-brand" onclick="exportViewExcel()">⬇️ تصدير Excel</button>
+  </div>
+
+  <div class="result-count" id="resultCount"></div>
+
+  <div class="tbl-card">
+    <div class="tbl-scroll">
+      <table class="main" id="mainTable">
+        <thead>
+          <tr>
+            <th rowspan="2">م</th>
+            <th rowspan="2" data-key="name" onclick="setMainSort('name')">البرنامج / الكلية</th>
+            <th rowspan="2" data-key="degree" onclick="setMainSort('degree')">الدرجة</th>
+            <th rowspan="2" data-key="status" onclick="setMainSort('status')">حالة البرنامج</th>
+            <th rowspan="2" data-key="eligibility" onclick="setMainSort('eligibility')">الأهلية</th>
+            <th class="grp" colspan="2">الاعتماد البرامجي NCAAA</th>
+            <th class="grp" colspan="3">الاعتماد الدولي</th>
+            <th rowspan="2" class="no-print">الشهادات</th>
+          </tr>
+          <tr class="sub">
+            <th data-key="ncaaaStatus" onclick="setMainSort('ncaaaStatus')">الحالة</th><th data-key="ncaaaEnd" onclick="setMainSort('ncaaaEnd')">تاريخ الانتهاء</th>
+            <th data-key="intlBody" onclick="setMainSort('intlBody')">الجهة</th><th data-key="intlStatus" onclick="setMainSort('intlStatus')">الحالة</th><th data-key="intlEnd" onclick="setMainSort('intlEnd')">تاريخ الانتهاء</th>
+          </tr>
+        </thead>
+        <tbody id="mainBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ============ تبويب اكتمال المستندات ============ -->
+<section class="tab-page" id="page-docs">
+  <div class="docs-summary" id="docsSummary"></div>
+  <div class="filters no-print">
+    <select id="dCollege" onchange="renderDocs()"></select>
+    <select id="dState" onchange="renderDocs()">
+      <option value="">الحالة — الكل</option>
+      <option value="miss">ناقصة فقط</option>
+      <option value="ok">مكتملة فقط</option>
+    </select>
+    <input type="search" id="dSearch" placeholder="🔎 بحث باسم البرنامج…" oninput="renderDocs()">
+    <span style="flex:1"></span>
+    <button class="btn btn-ghost" onclick="scanFolder(true)">🔄 إعادة فحص المجلد</button>
+  </div>
+  <div class="tbl-card">
+    <div class="tbl-scroll">
+      <table class="main" style="min-width:980px" id="docsTable">
+        <thead>
+          <tr>
+            <th>م</th>
+            <th data-key="college" onclick="setDocsSort('college')">الكلية</th>
+            <th data-key="name" onclick="setDocsSort('name')">البرنامج</th>
+            <th data-key="degree" onclick="setDocsSort('degree')">الدرجة</th>
+            <th data-key="slot" onclick="setDocsSort('slot')">الشهادة المطلوبة</th>
+            <th data-key="acc" onclick="setDocsSort('acc')">حالة الاعتماد</th>
+            <th data-key="has" onclick="setDocsSort('has')">حالة المستند</th>
+            <th style="min-width:250px">الإجراء</th>
+          </tr>
+        </thead>
+        <tbody id="docsBody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="unmatchedArea"></div>
+</section>
+
+<!-- ============ تبويب الإعدادات ============ -->
+<section class="tab-page" id="page-settings">
+
+  <div class="folder-panel">
+    <div class="fp-txt">
+      <h3>📁 مجلد أرشيف الشهادات (محلي)</h3>
+      <p>اربط المجلد الرئيسي «شهادات_الاعتماد» المقسم إلى كليات وبداخلها البرامج، وسيتم التعرف على الشهادات وربطها بالبرامج تلقائيًا. يعمل في Chrome وEdge.</p>
+    </div>
+    <span class="folder-status" id="folderStatus">غير مرتبط</span>
+    <button class="btn btn-gold" onclick="linkFolder()">ربط / تغيير المجلد</button>
+    <button class="btn btn-line" id="rescanBtn" onclick="scanFolder(true)" style="display:none">🔄 إعادة فحص</button>
+  </div>
+
+  <div class="folder-panel" style="background:linear-gradient(135deg,#EFF3F1,#E3EEEB);border-color:#C9DCD5">
+    <div class="fp-txt">
+      <h3 style="color:var(--brand-2)">🌐 مستودع GitHub (مشاركة مع الزملاء)</h3>
+      <p style="color:var(--ink-2)">اقرأ الشهادات من مستودع مشترك يراه الجميع من أي جهاز. رمز الوصول اختياري: مطلوب فقط للرفع والحذف من الشاشة مباشرة (يُحفظ في متصفحك فقط ولا يُشارك).</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+        <input id="ghOwner" placeholder="المالك (username)" style="border:1px solid var(--line);border-radius:8px;padding:7px 11px;direction:ltr;width:150px">
+        <input id="ghRepo" placeholder="اسم المستودع" style="border:1px solid var(--line);border-radius:8px;padding:7px 11px;direction:ltr;width:150px">
+        <input id="ghBranch" placeholder="الفرع (main)" style="border:1px solid var(--line);border-radius:8px;padding:7px 11px;direction:ltr;width:110px">
+        <input id="ghPat" type="password" placeholder="رمز الوصول PAT (اختياري)" style="border:1px solid var(--line);border-radius:8px;padding:7px 11px;direction:ltr;width:210px">
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <span class="folder-status" id="ghStatus" style="border-color:#C9DCD5;color:var(--brand-2)">غير متصل</span>
+      <span class="folder-status" id="srcModeBadge" style="border-color:#C9DCD5;color:var(--ink-3);font-weight:500">المصدر النشط: المجلد المحلي</span>
+      <span class="folder-status" id="ghDataStatus" style="border-color:#C9DCD5;font-weight:500">البيانات: محلية</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-brand" onclick="ghConnect()">اتصال / تحديث</button>
+        <button class="btn btn-line" onclick="ghScan(true)">🔄 فحص</button>
+        <button class="btn btn-danger" onclick="ghDisconnect()">فصل</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-gold" onclick="ghBulkUpload()" title="ينقل كل شهادات مجلدك المحلي إلى المستودع تلقائيًا">📤 رفع شهادات المجلد المحلي للمستودع</button>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn btn-ghost" onclick="ghPublishData()" title="اجعل بياناتك الحالية هي التي يراها الجميع">⬆️ نشر بيانات البرامج</button>
+        <button class="btn btn-ghost" onclick="ghFetchData(false)" title="اجلب أحدث بيانات منشورة في المستودع">⬇️ جلب بيانات البرامج</button>
+      </div>
+      <span id="ghProgress" style="font-size:12px;color:var(--brand-2);font-weight:700"></span>
+    </div>
+  </div>
+
+  <div class="set-toolbar">
+    <input type="search" id="sSearch" placeholder="🔎 بحث…" style="border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#FBFCFC;min-width:170px" oninput="renderSettings()">
+    <select id="sCollege" onchange="renderSettings()" style="border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#FBFCFC"></select>
+    <select id="sSort" onchange="renderSettings()" style="border:1px solid var(--line);border-radius:9px;padding:8px 12px;background:#FBFCFC">
+      <option value="">الترتيب الأصلي</option>
+      <option value="college">فرز: الكلية</option>
+      <option value="name">فرز: البرنامج</option>
+      <option value="degree">فرز: الدرجة</option>
+      <option value="ncaaaStatus">فرز: حالة NCAAA</option>
+      <option value="intlBody">فرز: الجهة الدولية</option>
+      <option value="eligibility">فرز: الأهلية</option>
+    </select>
+    <span class="sep"></span>
+    <button class="btn btn-brand" onclick="addProgram()">＋ إضافة برنامج</button>
+    <span class="sep"></span>
+    <button class="btn btn-ghost" onclick="exportSettingsExcel()">⬇️ تصدير Excel</button>
+    <button class="btn btn-ghost" onclick="exportJSON()">⬇️ نسخة احتياطية JSON</button>
+    <label class="btn btn-line" style="margin:0">
+      ⬆️ استيراد Excel<input type="file" accept=".xlsx" hidden onchange="importExcel(this)">
+    </label>
+    <label class="btn btn-line" style="margin:0">
+      ⬆️ استعادة JSON<input type="file" accept=".json" hidden onchange="importJSON(this)">
+    </label>
+    <span class="sep"></span>
+    <button class="btn btn-danger" onclick="resetData()">↺ استعادة البيانات الأصلية</button>
+    <span class="save-state" id="saveState">✓ تم الحفظ تلقائيًا</span>
+  </div>
+
+  <div class="tbl-card">
+    <div class="tbl-scroll" style="max-height:72vh;overflow-y:auto">
+      <table class="edit">
+        <thead>
+          <tr>
+            <th rowspan="2">م</th>
+            <th rowspan="2">المجال</th>
+            <th rowspan="2">الكلية</th>
+            <th rowspan="2" style="min-width:200px">اسم البرنامج</th>
+            <th rowspan="2">الدرجة</th>
+            <th rowspan="2">حالة البرنامج</th>
+            <th rowspan="2">تخريج دفعة</th>
+            <th rowspan="2">آخر دفعة</th>
+            <th rowspan="2">القبول القادم</th>
+            <th rowspan="2">الأهلية</th>
+            <th class="g2" colspan="4">الاعتماد البرامجي NCAAA</th>
+            <th class="g2" colspan="5">الاعتماد الدولي</th>
+            <th rowspan="2">شهادات مرفوعة</th>
+            <th rowspan="2">حذف</th>
+          </tr>
+          <tr>
+            <th class="g2">الحالة</th><th class="g2">البداية</th><th class="g2">الانتهاء</th><th class="g2">التثبت</th>
+            <th class="g2">الجهة</th><th class="g2">الحالة</th><th class="g2">البداية</th><th class="g2">الانتهاء</th><th class="g2">التثبت</th>
+          </tr>
+        </thead>
+        <tbody id="editBody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- مودال عرض الشهادات -->
+<div class="modal-bg" id="certModal" onclick="if(event.target===this)closeCert()">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <h3 id="certTitle">شهادات البرنامج</h3>
+        <div class="mh-sub" id="certSub"></div>
+      </div>
+      <button class="modal-close" onclick="closeCert()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cert-tabs" id="certTabs"></div>
+      <div id="certViewer"></div>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+/* =========================================================
+   سجل اعتماد البرامج الأكاديمية — جامعة الجوف
+   ملف واحد متكامل: عرض + إعدادات + أرشيف شهادات
+   ========================================================= */
+
+const DEFAULT_DATA = [{"id":1,"field":"العلمي","college":"كلية الهندسة","name":"الهندسة المدنية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2026-09-30","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":2,"field":"الطبي","college":"كلية العلوم الطبية التطبيقية","name":"علوم المختبرات الإكلينيكية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-09-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":3,"field":"الإنساني","college":"كلية الأعمال","name":"المحاسبة","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-09-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":4,"field":"الطبي","college":"كلية الطب","name":"الطب والجراحة","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-12-31","ncaaaVerified":"نعم","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":5,"field":"الإنساني","college":"كلية الأعمال","name":"إدارة الأعمال","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-12-31","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":6,"field":"الإنساني","college":"كلية الآداب","name":"اللغة العربية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-12-31","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":7,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"نظم المعلومات","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-12-31","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":8,"field":"الطبي","college":"كلية التمريض","name":"التمريض","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2027-12-31","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":9,"field":"العلمي","college":"كلية الهندسة","name":"الهندسة الميكانيكية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-01-31","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":10,"field":"العلمي","college":"كلية الهندسة","name":"الهندسة الكهربائية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":11,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"هندسة الحاسب الآلي والشبكات","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":12,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"علوم الحاسب","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"ABET","intlStatus":"كامل","intlStart":"","intlEnd":"2027-09-30","intlVerified":"نعم"},{"id":13,"field":"الطبي","college":"كلية الصيدلة","name":"دكتور صيدلة","degree":"بكالوريس","status":"مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"نعم","eligibility":"غير مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":14,"field":"الطبي","college":"كلية العلوم الطبية التطبيقية","name":"العلاج الطبيعي والتأهيل الصحي","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-06-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":15,"field":"العلمي","college":"كلية العلوم","name":"الفيزياء","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-11-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":16,"field":"العلمي","college":"كلية العلوم","name":"الأحياء","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-11-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":17,"field":"العلمي","college":"كلية العلوم","name":"الكيمياء","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-11-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":18,"field":"العلمي","college":"كلية العلوم","name":"الرياضيات","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-11-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":19,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"الشريعة","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2030-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":20,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"القانون","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2027-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":21,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"الدراسات الإسلامية","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2027-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":22,"field":"الإنساني","college":"كلية التربية","name":"تعليم الطفولة المبكرة","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":23,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"هندسة البرمجيات","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2028-06-01","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":24,"field":"الإنساني","college":"كلية الأعمال","name":"التمويل والاستثمار","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"بانتظار قرار الاعتماد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":25,"field":"الإنساني","college":"كلية الآداب","name":"اللغة الانجليزية","degree":"بكالوريس","status":"غير مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"HCERES","intlStatus":"كامل","intlStart":"","intlEnd":"2030-12-12","intlVerified":"نعم"},{"id":26,"field":"الطبي","college":"كلية طب الاسنان","name":"طب جراحة الفم والأسنان","degree":"بكالوريس","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":27,"field":"الإنساني","college":"كلية الآداب","name":"الرياضة و علوم النشاط البدني","degree":"بكالوريس","status":"غير مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":28,"field":"العلمي","college":"كلية الهندسة","name":"التصميم الداخلي","degree":"بكالوريس","status":"غير مفعل","graduated":"","lastBatch":"","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":29,"field":"الإنساني","college":"كلية الأعمال","name":"إدارة الأعمال التنفيذي","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2028-04-30","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":30,"field":"العلمي","college":"كلية العلوم","name":"الكيمياء","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"ASIIN","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":31,"field":"العلمي","college":"كلية العلوم","name":"العلوم في الرياضيات","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"كامل","ncaaaStart":"","ncaaaEnd":"2031-04-30","ncaaaVerified":"نعم","intlBody":"ASIIN","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":32,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"الأمن السيبراني","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2028-06-01","ncaaaVerified":"نعم","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":33,"field":"الطبي","college":"كلية الطب","name":"مكافحة العدوى","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"بانتظار قرار الاعتماد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":34,"field":"الطبي","college":"كلية الطب","name":"الصحة العامة","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":35,"field":"الطبي","college":"كلية طب الاسنان","name":"الاستعاضة السنية","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"مشروط","ncaaaStart":"","ncaaaEnd":"2028-06-01","ncaaaVerified":"نعم","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":36,"field":"الطبي","college":"كلية التمريض","name":"التمريض","degree":"ماجستير","status":"مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"نعم","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":37,"field":"الطبي","college":"كلية العلوم الطبية التطبيقية","name":"علوم المختبرات الإكلينيكية","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":38,"field":"الإنساني","college":"كلية التربية","name":"الإرشاد النفسي","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"كامل","intlStart":"","intlEnd":"2031-09-30","intlVerified":"نعم"},{"id":39,"field":"العلمي","college":"كلية الهندسة","name":"العلوم في الطاقة المتجددة","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"ASIIN","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":40,"field":"العلمي","college":"كلية العلوم","name":"العلوم في الفيزياء","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1444 - الثالث","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"ASIIN","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":41,"field":"العلمي","college":"كلية العلوم","name":"العلوم في علم النبات","degree":"ماجستير","status":"غير مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"ASIIN","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":42,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"الفقه وأصوله","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":43,"field":"الإنساني","college":"كلية التربية","name":"التربية في تقنيات التعليم","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":44,"field":"الإنساني","college":"كلية التربية","name":"التربية في التربية الخاصة","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1444 - الثالث","admission":"نعم","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":45,"field":"الإنساني","college":"كلية التربية","name":"التربية في المناهج وطرق التدريس","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الثاني","admission":"نعم","eligibility":"يتطلب استثناء","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":46,"field":"الإنساني","college":"كلية التربية","name":"التربية في القيادة التربوية","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"AHPGS","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":47,"field":"العلمي","college":"كلية الهندسة","name":"الإدارة الهندسية التنفيذي","degree":"ماجستير","status":"مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"نعم","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"ASIIN","intlStatus":"تحت اجراءات التوقيع","intlStart":"","intlEnd":"","intlVerified":""},{"id":48,"field":"الإنساني","college":"كلية الأعمال","name":"إدارة الخدمات الصحية والمستشفيات التنفيذي","degree":"ماجستير","status":"مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"نعم","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":49,"field":"العلمي","college":"كلية العلوم","name":"العلوم في الاحياء الدقيقة","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1445 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":50,"field":"العلمي","college":"كلية العلوم","name":"العلوم في علم الحيوان","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":51,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"العلوم في علم البيانات","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1443 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":52,"field":"العلمي","college":"كلية علوم الحاسب والمعلومات","name":"العلوم في الذكاء الاصطناعي","degree":"ماجستير","status":"غير مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":53,"field":"الإنساني","college":"كلية الآداب","name":"الآداب في اللغويات التطبيقية","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":54,"field":"الإنساني","college":"كلية الآداب","name":"الآداب في اللغة العربية وآدابها","degree":"ماجستير","status":"مفعل","graduated":"نعم","lastBatch":"1446 - الاول","admission":"نعم","eligibility":"مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":55,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"التفسير وعلوم القران","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":56,"field":"الإنساني","college":"كلية الشريعة والقانون","name":"الحديث وعلومه","degree":"ماجستير","status":"غير مفعل","graduated":"نعم","lastBatch":"1447 - الثاني","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":57,"field":"الطبي","college":"كلية العلوم الطبية التطبيقية","name":"العلوم في العلاج الطبيعي","degree":"ماجستير","status":"غير مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":58,"field":"الطبي","college":"كلية الصيدلة","name":"العلوم في علم السموم","degree":"ماجستير","status":"غير مفعل","graduated":"لا","lastBatch":"لا يوجد","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"لا يوجد","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"لا يوجد","intlStatus":"لا يوجد","intlStart":"","intlEnd":"","intlVerified":""},{"id":59,"field":"الإنساني","college":"كلية الأعمال","name":"الدبلوم العالي في الموارد البشرية","degree":"دبلوم عالي","status":"غير مفعل","graduated":"نعم","lastBatch":"1444 - الثالث","admission":"لا","eligibility":"غير مؤهل","ncaaaStatus":"","ncaaaStart":"","ncaaaEnd":"","ncaaaVerified":"","intlBody":"","intlStatus":"","intlStart":"","intlEnd":"","intlVerified":""}];
+
+const LS_KEY = 'ju_accred_programs_v1';
+const ENUMS = {
+  field: ['العلمي','الطبي','الإنساني'],
+  degree: ['بكالوريس','ماجستير','دبلوم عالي','دكتوراه'],
+  status: ['مفعل','غير مفعل'],
+  yesno: ['نعم','لا','لا يوجد'],
+  eligibility: ['مؤهل','غير مؤهل','يتطلب استثناء','بانتظار قرار الاعتماد'],
+  ncaaaStatus: ['كامل','مشروط','بانتظار قرار الاعتماد','لا يوجد'],
+  intlBody: ['لا يوجد','ABET','AHPGS','ASIIN','HCERES','AACSB','أخرى'],
+  intlStatus: ['كامل','مشروط','تحت اجراءات التوقيع','بانتظار قرار الاعتماد','لا يوجد'],
+};
+
+let programs = [];
+let charts = {};
+let dirHandle = null;
+let folderIndex = {};   // normKey -> [{name, handle}]
+let uploadsIndex = {};  // uid -> [{key, name, slot}]
+
+/* ---------- تحميل الحالة ---------- */
+function ensureUids(list){
+  list.forEach((p,i)=>{ if(!p.uid) p.uid = 'p' + (p.id ?? (i+1)) + '_' + i; });
+  return list;
+}
+function loadState(){
+  try{
+    const raw = localStorage.getItem(LS_KEY);
+    if(raw){ programs = ensureUids(JSON.parse(raw)); return; }
+  }catch(e){ console.warn(e); }
+  programs = ensureUids(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+}
+let saveTimer=null;
+function saveState(showBadge=true){
+  localStorage.setItem(LS_KEY, JSON.stringify(programs));
+  if(showBadge){
+    const el=document.getElementById('saveState');
+    el.classList.add('show');
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>el.classList.remove('show'),1800);
+  }
+}
+
+/* ---------- IndexedDB (شهادات + مقبض المجلد) ---------- */
+function idb(){
+  return new Promise((res,rej)=>{
+    const rq = indexedDB.open('ju_accred_db', 1);
+    rq.onupgradeneeded = e=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('files')) db.createObjectStore('files');
+      if(!db.objectStoreNames.contains('kv')) db.createObjectStore('kv');
+    };
+    rq.onsuccess = ()=>res(rq.result);
+    rq.onerror = ()=>rej(rq.error);
+  });
+}
+async function idbSet(store,key,val){ const db=await idb(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).put(val,key); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function idbGet(store,key){ const db=await idb(); return new Promise((res,rej)=>{ const rq=db.transaction(store).objectStore(store).get(key); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); }); }
+async function idbDel(store,key){ const db=await idb(); return new Promise((res,rej)=>{ const tx=db.transaction(store,'readwrite'); tx.objectStore(store).delete(key); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }
+async function idbKeys(store){ const db=await idb(); return new Promise((res,rej)=>{ const rq=db.transaction(store).objectStore(store).getAllKeys(); rq.onsuccess=()=>res(rq.result); rq.onerror=()=>rej(rq.error); }); }
+
+async function refreshUploadsIndex(){
+  uploadsIndex = {};
+  const keys = await idbKeys('files');
+  for(const k of keys){
+    const [uid, slot, ...rest] = String(k).split('||');
+    const name = rest.join('||');
+    (uploadsIndex[uid] = uploadsIndex[uid] || []).push({key:k, uid, slot, name});
+  }
+}
+
+/* ---------- أدوات مساعدة ---------- */
+function esc(s){ return String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function normAr(s){
+  return String(s||'')
+    .replace(/[\u064B-\u0652]/g,'')
+    .replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
+    .replace(/كليه|كلية/g,'')
+    .replace(/[\s\-_–—()]/g,'')
+    .toLowerCase().trim();
+}
+function toast(msg, err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.toggle('err',err); t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2600);
+}
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(d){
+  if(!d) return '—';
+  const dt=new Date(d); if(isNaN(dt)) return esc(d);
+  return dt.toLocaleDateString('ar-SA-u-ca-gregory',{year:'numeric',month:'2-digit',day:'2-digit'});
+}
+function expiryInfo(endDate){
+  if(!endDate) return null;
+  const end=new Date(endDate); if(isNaN(end)) return null;
+  const days=Math.ceil((end - new Date())/86400000);
+  if(days<0)   return {cls:'bad', label:'منتهي منذ '+Math.abs(days)+' يوم', days};
+  if(days<=365)return {cls:'warn',label:'يتبقى '+days+' يوم', days};
+  return {cls:'', label:'يتبقى '+days+' يوم', days};
+}
+function statusBadge(v, map){
+  const cls = map[v] || 'b-mute';
+  return `<span class="badge ${cls}">${esc(v||'—')}</span>`;
+}
+/* تصنيف ملف الشهادة من اسمه */
+function classifySlot(name){
+  const n=String(name||'').toLowerCase();
+  if(n.includes('ncaaa')||n.includes('برامجي')||n.includes('وطني')||n.includes('هيئة تقويم')) return 'ncaaa';
+  if(/abet|ahpgs|asiin|hceres|aacsb|international/.test(n)||n.includes('دولي')) return 'intl';
+  return 'other';
+}
+/* هل الشهادات المطلوبة للبرنامج متوفرة؟ (يتطلب شهادة كل اعتماد كامل أو مشروط) */
+function certAuditEnabled(){ return Object.keys(folderIndex).length>0 || Object.keys(uploadsIndex).length>0; }
+function certStatusFor(p){
+  const needN = ['كامل','مشروط'].includes(p.ncaaaStatus);
+  const needI = ['كامل','مشروط'].includes(p.intlStatus) && p.intlBody && p.intlBody!=='لا يوجد';
+  const filesN=[], filesI=[], others=[];
+  (uploadsIndex[p.uid]||[]).forEach(f=>{
+    const s = f.slot==='ncaaa'||f.slot==='intl' ? f.slot : classifySlot(f.name);
+    const e={src:'up', key:f.key, name:f.name};
+    if(s==='ncaaa') filesN.push(e); else if(s==='intl') filesI.push(e); else others.push(e);
+  });
+  folderKeyMatches(p).forEach(f=>{
+    const s=f.slot||classifySlot(f.name);
+    const e={src: f.gh?'gh':'dir', name:f.name, handle:f.handle, parent:f.parent, url:f.url, sha:f.sha, path:f.path};
+    if(s==='ncaaa') filesN.push(e); else if(s==='intl') filesI.push(e); else others.push(e);
+  });
+  // الملفات غير المصنفة تغطي الشهادات الناقصة بالترتيب
+  if(needN && !filesN.length && others.length) filesN.push(others.shift());
+  if(needI && !filesI.length && others.length) filesI.push(others.shift());
+  const hasN=filesN.length>0, hasI=filesI.length>0;
+  const missing=[];
+  if(needN && !hasN) missing.push('شهادة NCAAA');
+  if(needI && !hasI) missing.push('شهادة '+p.intlBody);
+  return {needN, needI, hasN, hasI, filesN, filesI, required:(needN?1:0)+(needI?1:0), missing};
+}
+const NCAAA_MAP = {'كامل':'b-ok','مشروط':'b-warn','بانتظار قرار الاعتماد':'b-info','لا يوجد':'b-mute'};
+const INTL_MAP  = {'كامل':'b-ok','مشروط':'b-warn','تحت اجراءات التوقيع':'b-info','بانتظار قرار الاعتماد':'b-info','لا يوجد':'b-mute'};
+const ELIG_MAP  = {'مؤهل':'b-ok','غير مؤهل':'b-bad','يتطلب استثناء':'b-warn','بانتظار قرار الاعتماد':'b-info'};
+const PSTAT_MAP = {'مفعل':'b-ok','غير مفعل':'b-mute'};
+</script>
+<script>
+/* =========== التبويبات =========== */
+function switchTab(t){
+  ['view','docs','settings'].forEach(x=>{
+    document.getElementById('page-'+x).classList.toggle('active', x===t);
+  });
+  document.getElementById('tabBtnView').classList.toggle('active', t==='view');
+  document.getElementById('tabBtnDocs').classList.toggle('active', t==='docs');
+  document.getElementById('tabBtnSettings').classList.toggle('active', t==='settings');
+}
+
+/* =========== الفلاتر =========== */
+function buildFilterOptions(){
+  const mk=(id,label,vals)=>{
+    const sel=document.getElementById(id);
+    const cur=sel.value;
+    sel.innerHTML=`<option value="">${label} — الكل</option>`+
+      vals.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('');
+  };
+  const uniq = k => [...new Set(programs.map(p=>p[k]).filter(v=>v && v!=='لا يوجد'))].sort((a,b)=>a.localeCompare(b,'ar'));
+  mk('fCollege','الكلية', [...new Set(programs.map(p=>p.college).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar')));
+  mk('fDegree','الدرجة', [...new Set(programs.map(p=>p.degree).filter(Boolean))]);
+  mk('fEligibility','الأهلية', [...new Set(programs.map(p=>p.eligibility).filter(Boolean))]);
+  mk('fNcaaa','اعتماد NCAAA', [...new Set(programs.map(p=>p.ncaaaStatus).filter(Boolean))]);
+  mk('fIntl','جهة الاعتماد الدولي', uniq('intlBody'));
+}
+function resetFilters(){
+  ['fCollege','fDegree','fEligibility','fNcaaa','fIntl'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('fSearch').value='';
+  renderView();
+}
+function filteredPrograms(){
+  const v = id=>document.getElementById(id).value;
+  const q = normAr(v('fSearch'));
+  return programs.filter(p=>{
+    if(v('fCollege') && p.college!==v('fCollege')) return false;
+    if(v('fDegree') && p.degree!==v('fDegree')) return false;
+    if(v('fEligibility') && p.eligibility!==v('fEligibility')) return false;
+    if(v('fNcaaa') && p.ncaaaStatus!==v('fNcaaa')) return false;
+    if(v('fIntl') && p.intlBody!==v('fIntl')) return false;
+    if(q && !normAr(p.name+p.college+p.intlBody).includes(q)) return false;
+    return true;
+  });
+}
+
+/* =========== KPI + تنبيهات =========== */
+function renderKpis(list){
+  const c = f => list.filter(f).length;
+  const hasIntl = p => p.intlBody && p.intlBody!=='لا يوجد';
+  const expSoon=[], expDone=[];
+  list.forEach(p=>{
+    [[p.ncaaaEnd,'NCAAA'],[p.intlEnd,p.intlBody]].forEach(([d,src])=>{
+      const e=expiryInfo(d);
+      if(!e) return;
+      if(e.cls==='bad') expDone.push({p,src,d});
+      else if(e.cls==='warn') expSoon.push({p,src,d,days:e.days});
+    });
+  });
+  const kpis=[
+    {n:list.length, l:'إجمالي البرامج', s:'ضمن نطاق الفلترة الحالية', c:'var(--brand)'},
+    {n:c(p=>p.status==='مفعل'), l:'برنامج مفعل', s:c(p=>p.status!=='مفعل')+' غير مفعل', c:'var(--info)'},
+    {n:c(p=>p.eligibility==='مؤهل'), l:'مؤهل للاعتماد', s:c(p=>p.eligibility==='غير مؤهل')+' غير مؤهل', c:'var(--ok)'},
+    {n:c(p=>p.ncaaaStatus==='كامل'), l:'اعتماد برامجي كامل', s:c(p=>p.ncaaaStatus==='مشروط')+' اعتماد مشروط', c:'#0E7A5F'},
+    {n:c(hasIntl), l:'برنامج باعتماد دولي', s:[...new Set(list.filter(hasIntl).map(p=>p.intlBody))].length+' جهات اعتماد', c:'var(--gold)'},
+    {n:expSoon.length, l:'اعتماد ينتهي خلال سنة', s:'يتطلب بدء إجراءات التجديد', c:'var(--warn)'},
+    {n:expDone.length, l:'اعتماد منتهٍ', s:'يتطلب إجراءً عاجلًا', c:'var(--bad)'},
+  ];
+  let missCerts=[];
+  if(certAuditEnabled()){
+    list.forEach(p=>{
+      const cs=certStatusFor(p);
+      cs.missing.forEach(m=>missCerts.push({p,m}));
+    });
+    kpis.push({n:missCerts.length, l:'شهادة مطلوب رفعها', s:missCerts.length?'التفاصيل في تبويب اكتمال المستندات ←':'الأرشيف مكتمل ✓', c:missCerts.length?'#8A5FB0':'var(--ok)', click:"switchTab('docs')"});
+  }
+  document.getElementById('kpis').innerHTML = kpis.map(k=>
+    `<div class="kpi" style="--kc:${k.c}${k.click?';cursor:pointer':''}" ${k.click?`onclick="${k.click}"`:''}><div class="k-num">${k.n}</div><div class="k-lbl">${k.l}</div><div class="k-sub">${k.s}</div></div>`
+  ).join('');
+
+  let alerts='';
+  if(expDone.length){
+    alerts+=`<div class="alert-strip red"><div class="ai">⛔</div><div><b>اعتمادات منتهية (${expDone.length}):</b>
+      <div class="a-list">${expDone.map(x=>`<span class="a-item">${esc(x.p.name)} — ${esc(x.src)} (${fmtDate(x.d)})</span>`).join('')}</div></div></div>`;
+  }
+  if(expSoon.length){
+    expSoon.sort((a,b)=>a.days-b.days);
+    alerts+=`<div class="alert-strip"><div class="ai">⏳</div><div><b>اعتمادات تنتهي خلال 12 شهرًا (${expSoon.length}):</b>
+      <div class="a-list">${expSoon.map(x=>`<span class="a-item">${esc(x.p.name)} — ${esc(x.src)} · يتبقى ${x.days} يوم</span>`).join('')}</div></div></div>`;
+  }
+  document.getElementById('alertsArea').innerHTML=alerts;
+}
+
+/* =========== الرسوم البيانية =========== */
+const CHART_FONT = {family:"'IBM Plex Sans Arabic','Tajawal',sans-serif", size:11.5};
+function renderCharts(list){
+  Object.values(charts).forEach(c=>c.destroy()); charts={};
+  Chart.defaults.font = CHART_FONT;
+  Chart.defaults.color = '#3D5049';
+
+  // 1) حسب الكلية (متراكم)
+  const colleges=[...new Set(list.map(p=>p.college))].sort((a,b)=>a.localeCompare(b,'ar'));
+  const short = c => c.replace('كلية ','');
+  const cnt=(col,f)=>list.filter(p=>p.college===col && f(p)).length;
+  charts.college = new Chart(chCollege,{
+    type:'bar',
+    data:{labels:colleges.map(short),datasets:[
+      {label:'كامل', data:colleges.map(c=>cnt(c,p=>p.ncaaaStatus==='كامل')), backgroundColor:'#1C7C4A', stack:'s', borderRadius:3},
+      {label:'مشروط', data:colleges.map(c=>cnt(c,p=>p.ncaaaStatus==='مشروط')), backgroundColor:'#DBA62B', stack:'s', borderRadius:3},
+      {label:'بانتظار القرار', data:colleges.map(c=>cnt(c,p=>p.ncaaaStatus==='بانتظار قرار الاعتماد')), backgroundColor:'#4A87B8', stack:'s', borderRadius:3},
+      {label:'لا يوجد', data:colleges.map(c=>cnt(c,p=>!p.ncaaaStatus||p.ncaaaStatus==='لا يوجد')), backgroundColor:'#C4CCC9', stack:'s', borderRadius:3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{position:'bottom',labels:{boxWidth:11,boxHeight:11,padding:12}}},
+      scales:{x:{grid:{display:false},ticks:{maxRotation:60,minRotation:35}},y:{beginAtZero:true,ticks:{precision:0},grid:{color:'#E7ECEA'}}}}
+  });
+
+  // 2) NCAAA doughnut
+  const nLabels=['كامل','مشروط','بانتظار قرار الاعتماد','لا يوجد'];
+  const nData=nLabels.map(s=>list.filter(p=>(p.ncaaaStatus||'لا يوجد')===s).length);
+  charts.ncaaa=new Chart(chNcaaa,{type:'doughnut',
+    data:{labels:nLabels,datasets:[{data:nData,backgroundColor:['#1C7C4A','#DBA62B','#4A87B8','#C4CCC9'],borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:11,boxHeight:11,padding:10}}}}
+  });
+
+  // 3) جهات دولية
+  const bodies=[...new Set(list.map(p=>p.intlBody).filter(b=>b&&b!=='لا يوجد'))];
+  const bData=bodies.map(b=>list.filter(p=>p.intlBody===b).length);
+  const noIntl=list.filter(p=>!p.intlBody||p.intlBody==='لا يوجد').length;
+  charts.intl=new Chart(chIntl,{type:'doughnut',
+    data:{labels:[...bodies,'بدون اعتماد دولي'],datasets:[{data:[...bData,noIntl],
+      backgroundColor:['#0F4C42','#B98A2F','#4A87B8','#8A5FB0','#C25D4E','#C4CCC9'].slice(0,bodies.length+1),
+      borderWidth:2,borderColor:'#fff'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'58%',
+      plugins:{legend:{position:'bottom',labels:{boxWidth:11,boxHeight:11,padding:10}}}}
+  });
+}
+
+/* =========== الجدول الرئيسي =========== */
+function certCountFor(p){
+  const up = (uploadsIndex[p.uid]||[]).length;
+  const fk = folderKeyMatches(p);
+  return up + fk.length;
+}
+function certBtnHtml(p){
+  const certs=certCountFor(p);
+  if(certAuditEnabled()){
+    const cs=certStatusFor(p);
+    if(cs.missing.length===cs.required && cs.required>0 && !certs)
+      return `<button class="cert-btn miss" onclick="openCert('${p.uid}')" title="${esc(cs.missing.join(' + '))}"><span class="cert-dot"></span> مطلوب رفع الشهادة</button>`;
+    if(cs.missing.length)
+      return `<button class="cert-btn part" onclick="openCert('${p.uid}')" title="ناقص: ${esc(cs.missing.join(' + '))}"><span class="cert-dot"></span> ناقصة (${cs.required-cs.missing.length}/${cs.required})</button>`;
+    if(cs.required>0)
+      return `<button class="cert-btn full" onclick="openCert('${p.uid}')"><span class="cert-dot"></span> مكتملة ✓ (${certs})</button>`;
+  }
+  return `<button class="cert-btn ${certs?'':'none'}" onclick="openCert('${p.uid}')"><span class="cert-dot"></span> ${certs?`عرض (${certs})`:'لا توجد'}</button>`;
+}
+function renderMainTable(list){
+  const tb=document.getElementById('mainBody');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="11" style="text-align:center;padding:40px;color:var(--ink-3)">لا توجد برامج مطابقة لشروط الفلترة الحالية</td></tr>`;
+    return;
+  }
+  tb.innerHTML=list.map((p,i)=>{
+    const nExp=expiryInfo(p.ncaaaEnd), iExp=expiryInfo(p.intlEnd);
+    const certs=certCountFor(p);
+    return `<tr>
+      <td style="color:var(--ink-3);font-weight:700">${i+1}</td>
+      <td><div class="prog-name">${esc(p.name)}</div><div class="prog-college">${esc(p.college)} · ${esc(p.field)}</div></td>
+      <td>${esc(p.degree)}</td>
+      <td>${statusBadge(p.status,PSTAT_MAP)}</td>
+      <td>${statusBadge(p.eligibility,ELIG_MAP)}</td>
+      <td style="text-align:center">${statusBadge(p.ncaaaStatus||'لا يوجد',NCAAA_MAP)}</td>
+      <td style="text-align:center">${p.ncaaaEnd?`<div>${fmtDate(p.ncaaaEnd)}</div><div class="exp-line ${nExp?nExp.cls:''}">${nExp?nExp.label:''}</div>`:'—'}</td>
+      <td style="text-align:center">${p.intlBody&&p.intlBody!=='لا يوجد'?`<span class="badge b-gold">${esc(p.intlBody)}</span>`:'—'}</td>
+      <td style="text-align:center">${p.intlBody&&p.intlBody!=='لا يوجد'?statusBadge(p.intlStatus||'لا يوجد',INTL_MAP):'—'}</td>
+      <td style="text-align:center">${p.intlEnd?`<div>${fmtDate(p.intlEnd)}</div><div class="exp-line ${iExp?iExp.cls:''}">${iExp?iExp.label:''}</div>`:'—'}</td>
+      <td class="no-print" style="text-align:center">${certBtnHtml(p)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderView(){
+  let list=filteredPrograms();
+  if(mainSort.key){
+    const k=mainSort.key;
+    list=[...list].sort((a,b)=>String(a[k]??'').localeCompare(String(b[k]??''),'ar')*mainSort.dir);
+  }
+  markSortHeaders('mainTable', mainSort);
+  document.getElementById('cntView').textContent=programs.length;
+  document.getElementById('resultCount').textContent=`عرض ${list.length} من أصل ${programs.length} برنامجًا`;
+  renderKpis(list);
+  renderCharts(list);
+  renderMainTable(list);
+  renderDocs();
+}
+
+/* =========== تبويب اكتمال المستندات =========== */
+function docRequirements(){
+  // كل شهادة مطلوبة = صف مستقل
+  const rows=[];
+  programs.forEach(p=>{
+    const cs=certStatusFor(p);
+    if(cs.needN) rows.push({p, slot:'ncaaa', label:'شهادة الاعتماد البرامجي NCAAA', accStatus:p.ncaaaStatus, has:cs.hasN});
+    if(cs.needI) rows.push({p, slot:'intl', label:'شهادة '+p.intlBody+' الدولية', accStatus:p.intlStatus, has:cs.hasI});
+  });
+  return rows;
+}
+function renderDocs(){
+  const all=docRequirements();
+  const missing=all.filter(r=>!r.has);
+  const cnt=document.getElementById('cntDocs');
+  cnt.textContent=missing.length;
+  cnt.classList.toggle('red', missing.length>0);
+
+  // الملخص
+  document.getElementById('docsSummary').innerHTML=[
+    {n:all.length, l:'شهادة مطلوبة إجمالًا', s:'لكل اعتماد قائم (كامل أو مشروط)', c:'var(--brand)'},
+    {n:all.length-missing.length, l:'شهادة متوفرة', s:'في المجلد أو الأرشيف المحلي', c:'var(--ok)'},
+    {n:missing.length, l:'شهادة ناقصة', s:missing.length?'ارفعها من عمود الإجراء':'الأرشيف مكتمل ✓', c:missing.length?'var(--bad)':'var(--ok)'},
+    sourceMode==='github' && ghCfg
+      ? {n:'✓', l:'مستودع GitHub متصل', s:ghCfg.owner+'/'+ghCfg.repo+(ghCfg.pat?' · الرفع المباشر مفعّل':' · للرفع أدخل رمز الوصول'), c:'var(--gold)'}
+      : {n:dirHandle?'✓':'—', l:dirHandle?'المجلد مرتبط':'لا مصدر مرتبط', s:dirHandle?('يُرفع مباشرة داخل: '+dirHandle.name):'اربط مجلدًا محليًا أو مستودع GitHub من الإعدادات', c:dirHandle?'var(--gold)':'var(--mute)'},
+  ].map(k=>`<div class="kpi" style="--kc:${k.c}"><div class="k-num">${k.n}</div><div class="k-lbl">${k.l}</div><div class="k-sub">${k.s}</div></div>`).join('');
+
+  // فلتر الكليات
+  const dSel=document.getElementById('dCollege');
+  const cur=dSel.value;
+  const cols=[...new Set(all.map(r=>r.p.college))].sort((a,b)=>a.localeCompare(b,'ar'));
+  dSel.innerHTML=`<option value="">الكلية — الكل</option>`+cols.map(c=>`<option ${c===cur?'selected':''}>${esc(c)}</option>`).join('');
+
+  const fc=dSel.value, fs=document.getElementById('dState').value, q=normAr(document.getElementById('dSearch').value);
+  let list=all.filter(r=>{
+    if(fc && r.p.college!==fc) return false;
+    if(fs==='miss' && r.has) return false;
+    if(fs==='ok' && !r.has) return false;
+    if(q && !normAr(r.p.name+r.p.college).includes(q)) return false;
+    return true;
+  });
+  if(docsSort.key){
+    const gv=r=>({college:r.p.college,name:r.p.name,degree:r.p.degree,slot:r.slot,acc:r.accStatus,has:r.has?'1':'0'}[docsSort.key]||'');
+    list.sort((a,b)=>String(gv(a)).localeCompare(String(gv(b)),'ar')*docsSort.dir);
+  }else{
+    list.sort((a,b)=>(a.has-b.has)||a.p.college.localeCompare(b.p.college,'ar'));
+  }
+  markSortHeaders('docsTable', docsSort);
+
+  const tb=document.getElementById('docsBody');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--ink-3)">${all.length?'لا توجد نتائج مطابقة للفلترة':'لا توجد اعتمادات قائمة تتطلب شهادات'}</td></tr>`;
+  }else{
+    tb.innerHTML=list.map((r,i)=>{
+      const zid=`dz_${r.p.uid}_${r.slot}`;
+      return `<tr>
+        <td style="color:var(--ink-3);font-weight:700">${i+1}</td>
+        <td>${esc(r.p.college)}</td>
+        <td class="prog-name">${esc(r.p.name)}</td>
+        <td>${esc(r.p.degree)}</td>
+        <td>${r.slot==='ncaaa'?'<span class="badge b-info">NCAAA</span>':'<span class="badge b-gold">'+esc(r.p.intlBody)+'</span>'} <span class="doc-src">${esc(r.label)}</span></td>
+        <td>${statusBadge(r.accStatus, r.slot==='ncaaa'?NCAAA_MAP:INTL_MAP)}</td>
+        <td>${r.has?'<span class="badge b-ok">متوفرة ✓</span>':'<span class="badge b-bad">ناقصة</span>'}</td>
+        <td>${r.has
+          ? `<div style="display:flex;gap:5px;flex-wrap:wrap">
+               <button class="cert-btn full" onclick="openCert('${r.p.uid}')" title="عرض الشهادة"><span class="cert-dot"></span> عرض</button>
+               <button class="cert-btn part" onclick="docReplace('${r.p.uid}','${r.slot}')" title="استبدال الشهادة بملف جديد">⇄ استبدال</button>
+               <button class="cert-btn miss" style="animation:none" onclick="docDelete('${r.p.uid}','${r.slot}')" title="حذف الشهادة">🗑 حذف</button>
+             </div>`
+          : `<div class="dropzone" id="${zid}" onclick="dzPick('${r.p.uid}','${r.slot}')"
+               ondragover="event.preventDefault();this.classList.add('drag')"
+               ondragleave="this.classList.remove('drag')"
+               ondrop="dzDrop(event,'${r.p.uid}','${r.slot}','${zid}')">📤 اضغط أو اسحب الملف هنا</div>`}
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  // تقرير التشخيص: مجلدات غير مطابقة + ملفات متجاهَلة + ملفات في غير مكانها
+  const um=window._unmatchedFolders||[];
+  const dg=window._scanDiag||{skipped:[],stray:[]};
+  let diagHtml='';
+  if(um.length)
+    diagHtml+=`<div class="unmatched-box"><b>⚠️ مجلدات فيها شهادات لكن اسمها لا يطابق أي برنامج (${um.length}) — صحّح التسمية أو أرسلها لي:</b>
+      ${um.map(n=>`<span class="a-item">${esc(n)}</span>`).join('')}</div>`;
+  if(dg.stray.length)
+    diagHtml+=`<div class="unmatched-box"><b>📍 ملفات موضوعة خارج مجلدات البرامج (${dg.stray.length}) — انقلها إلى داخل مجلد البرنامج المناسب حتى تُقرأ:</b>
+      ${dg.stray.map(n=>`<span class="a-item">${esc(n)}</span>`).join('')}</div>`;
+  if(dg.skipped.length)
+    diagHtml+=`<div class="unmatched-box"><b>🚫 ملفات بامتداد غير مدعوم تم تجاهلها (${dg.skipped.length}) — المدعوم: PDF وصور (JPG, PNG, HEIC…):</b>
+      ${dg.skipped.map(n=>`<span class="a-item">${esc(n)}</span>`).join('')}</div>`;
+  document.getElementById('unmatchedArea').innerHTML=diagHtml;
+}
+
+/* حذف واستبدال شهادات من تبويب المستندات */
+async function deleteSlotFiles(p, slot){
+  const cs=certStatusFor(p);
+  const files=slot==='ncaaa'?cs.filesN:cs.filesI;
+  for(const f of files){
+    try{
+      if(f.src==='up') await idbDel('files', f.key);
+      else if(f.src==='gh') await ghDelete(f);
+      else if(f.parent) await f.parent.removeEntry(f.name);
+      else if(f.handle?.remove) await f.handle.remove();
+    }catch(e){ console.error(e); toast('تعذر حذف '+f.name, true); }
+  }
+  return files.length;
+}
+async function docDelete(uid, slot){
+  const p=programs.find(x=>x.uid===uid); if(!p) return;
+  const cs=certStatusFor(p);
+  const files=slot==='ncaaa'?cs.filesN:cs.filesI;
+  if(!files.length) return;
+  if(files.some(f=>f.src==='gh') && !ghCfg?.pat){ toast('الحذف من GitHub يتطلب إدخال رمز الوصول في الإعدادات', true); return; }
+  if(!confirm(`سيتم حذف الشهادة نهائيًا (من المجلد أو المستودع أو الأرشيف):\n\n${files.map(f=>'• '+f.name).join('\n')}\n\nهل أنت متأكد؟`)) return;
+  await deleteSlotFiles(p, slot);
+  await refreshUploadsIndex();
+  if(sourceMode==='github' && ghCfg) await ghScan(false);
+  else if(dirHandle) await scanFolder(false);
+  renderSettings(); renderView();
+  toast('تم حذف الشهادة');
+}
+function docReplace(uid, slot){
+  const p=programs.find(x=>x.uid===uid); if(!p) return;
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.pdf,image/*';
+  inp.onchange=async()=>{
+    const file=inp.files[0]; if(!file) return;
+    if(!confirm(`سيتم استبدال الشهادة الحالية بالملف «${file.name}». متابعة؟`)) return;
+    await deleteSlotFiles(p, slot);
+    await refreshUploadsIndex();
+    await docUpload(uid, slot, file);
+  };
+  inp.click();
+}
+
+/* =========== الفرز بالنقر على رؤوس الأعمدة =========== */
+let mainSort={key:'', dir:1};
+let docsSort={key:'', dir:1};
+function setMainSort(key){
+  mainSort = mainSort.key===key ? {key, dir:-mainSort.dir} : {key, dir:1};
+  renderView();
+}
+function setDocsSort(key){
+  docsSort = docsSort.key===key ? {key, dir:-docsSort.dir} : {key, dir:1};
+  renderDocs();
+}
+function markSortHeaders(tableId, st){
+  document.querySelectorAll(`#${tableId} th[data-key]`).forEach(th=>{
+    th.classList.toggle('s-asc', st.key===th.dataset.key && st.dir===1);
+    th.classList.toggle('s-desc', st.key===th.dataset.key && st.dir===-1);
+  });
+}
+
+function dzPick(uid, slot){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='.pdf,image/*';
+  inp.onchange=()=>{ if(inp.files[0]) docUpload(uid, slot, inp.files[0]); };
+  inp.click();
+}
+function dzDrop(ev, uid, slot, zid){
+  ev.preventDefault();
+  document.getElementById(zid)?.classList.remove('drag');
+  const f=ev.dataTransfer.files[0];
+  if(f) docUpload(uid, slot, f, zid);
+}
+async function docUpload(uid, slot, file, zid){
+  const p=programs.find(x=>x.uid===uid);
+  if(!p) return;
+  if(file.size>50*1024*1024){ toast('حجم الملف كبير (الحد 50 ميجابايت)', true); return; }
+  const z=zid&&document.getElementById(zid); if(z){ z.classList.add('busy'); z.textContent='جارٍ الحفظ…'; }
+
+  if(sourceMode==='github' && ghCfg){
+    try{
+      const ok=await ghUpload(p, slot, file);
+      if(ok){
+        await ghScan(false);
+        toast(`تم رفع «${file.name}» إلى المستودع في مجلد ${slot==='ncaaa'?'NCAAA':'International'} ✓`);
+      }else if(z){ z.classList.remove('busy'); z.textContent='📤 اضغط أو اسحب الملف هنا'; }
+    }catch(e){
+      console.error(e);
+      toast('فشل الرفع إلى GitHub — تحقق من صلاحيات رمز الوصول', true);
+      if(z){ z.classList.remove('busy'); z.textContent='📤 اضغط أو اسحب الملف هنا'; }
+    }
+    renderSettings(); renderView();
+    return;
+  }
+
+  const savedToFolder = await writeToLinkedFolder(p, file.name, file, slot);
+  if(savedToFolder){
+    await scanFolder(false);
+    toast(`تم حفظ «${file.name}» داخل مجلد ${slot==='ncaaa'?'NCAAA':'International'} للبرنامج ✓`);
+  }else{
+    await idbSet('files', `${uid}||${slot}||${file.name}`, {name:file.name, type:file.type, blob:file, added:Date.now()});
+    await refreshUploadsIndex();
+    toast(dirHandle
+      ? 'تعذر الحفظ في المجلد، حُفظت الشهادة في أرشيف المتصفح بدلًا من ذلك'
+      : 'حُفظت الشهادة في أرشيف المتصفح (اربط المجلد ليُحفظ الرفع فيه مباشرة)');
+  }
+  renderSettings(); renderView();
+}
+
+</script>
+<script>
+/* =========== جدول الإعدادات القابل للتعديل =========== */
+const FIELD_DEFS = [
+  ['field','select','field'], ['college','text'], ['name','text'], ['degree','select','degree'],
+  ['status','select','status'], ['graduated','select','yesno'], ['lastBatch','text'],
+  ['admission','select','yesno'], ['eligibility','select','eligibility'],
+  ['ncaaaStatus','select','ncaaaStatus'], ['ncaaaStart','date'], ['ncaaaEnd','date'], ['ncaaaVerified','select','yesno'],
+  ['intlBody','select','intlBody'], ['intlStatus','select','intlStatus'], ['intlStart','date'], ['intlEnd','date'], ['intlVerified','select','yesno'],
+];
+function selOpts(enumKey, cur){
+  const vals=[...ENUMS[enumKey]];
+  if(cur && !vals.includes(cur)) vals.unshift(cur);
+  return `<option value=""></option>`+vals.map(v=>`<option ${v===cur?'selected':''}>${esc(v)}</option>`).join('');
+}
+function cellCtrl(p, def){
+  const [key,type,enumKey]=def;
+  const v=p[key]||'';
+  if(type==='select') return `<select data-uid="${p.uid}" data-key="${key}" onchange="onEdit(this)">${selOpts(enumKey,v)}</select>`;
+  if(type==='date')   return `<input type="date" value="${esc(v)}" data-uid="${p.uid}" data-key="${key}" onchange="onEdit(this)">`;
+  return `<input type="text" value="${esc(v)}" data-uid="${p.uid}" data-key="${key}" onchange="onEdit(this)" ${key==='name'?'style="min-width:190px;font-weight:600"':''}>`;
+}
+function uploadCell(p){
+  const files=uploadsIndex[p.uid]||[];
+  const chips=files.map(f=>`<span class="chip-file" title="${esc(f.name)}">${f.slot==='ncaaa'?'برامجي':f.slot==='intl'?'دولي':'ملف'}<button onclick="deleteUpload('${esc(f.key)}')" title="حذف">✕</button></span>`).join('');
+  return `<div class="up-cell">${chips}
+    <label class="btn btn-line btn-sm" style="margin:0" title="رفع شهادة الاعتماد البرامجي NCAAA">＋برامجي<input type="file" hidden accept=".pdf,image/*" onchange="uploadCert(this,'${p.uid}','ncaaa')"></label>
+    <label class="btn btn-line btn-sm" style="margin:0" title="رفع شهادة الاعتماد الدولي">＋دولي<input type="file" hidden accept=".pdf,image/*" onchange="uploadCert(this,'${p.uid}','intl')"></label>
+  </div>`;
+}
+function renderSettings(){
+  // فلتر الكليات (مع الحفاظ على الاختيار الحالي)
+  const cSel=document.getElementById('sCollege');
+  const curC=cSel.value;
+  const cols=[...new Set(programs.map(p=>p.college).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'ar'));
+  cSel.innerHTML=`<option value="">الكلية — الكل</option>`+cols.map(c=>`<option ${c===curC?'selected':''}>${esc(c)}</option>`).join('');
+
+  const q=normAr(document.getElementById('sSearch').value);
+  const fc=cSel.value;
+  const sk=document.getElementById('sSort').value;
+  let list=programs.filter(p=>{
+    if(fc && p.college!==fc) return false;
+    if(q && !normAr(p.name+p.college+p.intlBody).includes(q)) return false;
+    return true;
+  });
+  if(sk) list=[...list].sort((a,b)=>String(a[sk]??'').localeCompare(String(b[sk]??''),'ar'));
+
+  const tb=document.getElementById('editBody');
+  if(!list.length){
+    tb.innerHTML=`<tr><td colspan="21" style="text-align:center;padding:40px;color:var(--ink-3)">لا توجد برامج مطابقة للبحث أو الفلترة</td></tr>`;
+    return;
+  }
+  tb.innerHTML=list.map((p,i)=>`<tr>
+    <td class="row-num">${i+1}</td>
+    ${FIELD_DEFS.map(d=>`<td>${cellCtrl(p,d)}</td>`).join('')}
+    <td>${uploadCell(p)}</td>
+    <td><button class="btn btn-danger btn-sm" onclick="deleteProgram('${p.uid}')">🗑</button></td>
+  </tr>`).join('');
+}
+function onEdit(el){
+  const p=programs.find(x=>x.uid===el.dataset.uid);
+  if(!p) return;
+  p[el.dataset.key]=el.value;
+  saveState(); markDirty(true);
+  buildFilterOptions();
+  renderView();
+}
+function addProgram(){
+  programs.push({
+    uid:'p_new_'+Date.now(), id:programs.length+1,
+    field:'',college:'',name:'برنامج جديد',degree:'بكالوريس',status:'مفعل',
+    graduated:'',lastBatch:'',admission:'',eligibility:'',
+    ncaaaStatus:'لا يوجد',ncaaaStart:'',ncaaaEnd:'',ncaaaVerified:'',
+    intlBody:'لا يوجد',intlStatus:'لا يوجد',intlStart:'',intlEnd:'',intlVerified:''
+  });
+  saveState(); markDirty(true); renderSettings(); buildFilterOptions(); renderView();
+  const sc=document.querySelector('#page-settings .tbl-scroll');
+  sc.scrollTop=sc.scrollHeight;
+  toast('تمت إضافة برنامج جديد — عدّل بياناته في نهاية الجدول');
+}
+function deleteProgram(uid){
+  const p=programs.find(x=>x.uid===uid);
+  if(!confirm(`سيتم حذف برنامج «${p?.name}» نهائيًا من القائمة. هل أنت متأكد؟`)) return;
+  programs=programs.filter(x=>x.uid!==uid);
+  saveState(); markDirty(true); renderSettings(); buildFilterOptions(); renderView();
+  toast('تم حذف البرنامج');
+}
+function resetData(){
+  if(!confirm('سيتم تجاهل جميع التعديلات والعودة إلى بيانات ملف الإكسيل الأصلي.\nالشهادات المرفوعة لن تُحذف. هل تريد المتابعة؟')) return;
+  programs=ensureUids(JSON.parse(JSON.stringify(DEFAULT_DATA)));
+  saveState(); markDirty(true); renderSettings(); buildFilterOptions(); renderView();
+  toast('تمت استعادة البيانات الأصلية');
+}
+
+/* =========== رفع الشهادات (IndexedDB) =========== */
+async function uploadCert(input, uid, slot){
+  const file=input.files[0]; input.value='';
+  if(!file) return;
+  if(file.size > 25*1024*1024){ toast('حجم الملف كبير (الحد 25 ميجابايت)', true); return; }
+  const key=`${uid}||${slot}||${file.name}`;
+  await idbSet('files', key, {name:file.name, type:file.type, blob:file, added:Date.now()});
+  await refreshUploadsIndex();
+  renderSettings(); renderView();
+  toast(`تم حفظ الشهادة «${file.name}» وربطها بالبرنامج`);
+}
+async function deleteUpload(key){
+  if(!confirm('حذف هذه الشهادة من الأرشيف المحلي؟')) return;
+  await idbDel('files', key);
+  await refreshUploadsIndex();
+  renderSettings(); renderView();
+  toast('تم حذف الشهادة');
+}
+
+/* =========== ربط مجلد الشهادات =========== */
+function folderKeyMatches(p){
+  if(!Object.keys(folderIndex).length) return [];
+  const colKey=normAr(p.college);
+  const nameKeys=[normAr(p.name+p.degree), normAr(p.name)];
+  const out=[];
+  for(const nk of nameKeys){
+    const hit=folderIndex[colKey+'::'+nk];
+    if(hit){ out.push(...hit); break; }
+  }
+  return out;
+}
+async function linkFolder(){
+  if(!window.showDirectoryPicker){
+    toast('ميزة ربط المجلد تتطلب متصفح Chrome أو Edge', true); return;
+  }
+  try{
+    dirHandle=await showDirectoryPicker({mode:'readwrite'});
+    await idbSet('kv','dirHandle',dirHandle);
+    setSourceMode('local');
+    await scanFolder();
+  }catch(e){ if(e.name!=='AbortError'){ console.error(e); toast('تعذر ربط المجلد', true);} }
+}
+async function tryRestoreFolder(){
+  try{
+    const h=await idbGet('kv','dirHandle');
+    if(!h) return;
+    const perm=await h.queryPermission({mode:'readwrite'});
+    if(perm==='granted'){ dirHandle=h; await scanFolder(false); }
+    else{
+      // بانتظار نقرة من المستخدم لإعادة منح الإذن
+      document.getElementById('folderChipTxt').textContent='إعادة الاتصال بمجلد الشهادات';
+      const chip=document.getElementById('folderChip');
+      chip.onclick=async()=>{
+        try{
+          if(await h.requestPermission({mode:'readwrite'})==='granted'){ dirHandle=h; await scanFolder(); }
+          else linkFolder();
+        }catch(_){ linkFolder(); }
+        chip.onclick=linkFolder;
+      };
+    }
+  }catch(e){ console.warn(e); }
+}
+
+/* البحث عن مجلد فرعي بمطابقة مرنة للاسم */
+async function findSubDir(parent, targets){
+  const keys=targets.map(normAr);
+  for await (const [name, handle] of parent.entries()){
+    if(handle.kind==='directory' && keys.includes(normAr(name))) return handle;
+  }
+  return null;
+}
+/* كتابة ملف الشهادة داخل مجلد الكلية/البرنامج/نوع الاعتماد (يُنشأ إن لم يوجد) */
+async function writeToLinkedFolder(p, fname, file, slot){
+  if(!dirHandle) return false;
+  try{
+    if(await dirHandle.queryPermission({mode:'readwrite'})!=='granted'){
+      if(await dirHandle.requestPermission({mode:'readwrite'})!=='granted') return false;
+    }
+    const root=archiveRoot||dirHandle;
+    let colDir=await findSubDir(root,[p.college]);
+    if(!colDir) colDir=await root.getDirectoryHandle(p.college,{create:true});
+    let progDir=await findSubDir(colDir,[p.name+' - '+p.degree, p.name]);
+    if(!progDir) progDir=await colDir.getDirectoryHandle(`${p.name} - ${p.degree}`,{create:true});
+    // البحث عن مجلد فرعي موجود لنفس النوع، وإلا يُنشأ باسمه القياسي
+    let slotDir=null;
+    for await (const [n,h] of progDir.entries()){
+      if(h.kind==='directory' && slotFromDirName(n)===slot){ slotDir=h; break; }
+    }
+    if(!slotDir) slotDir=await progDir.getDirectoryHandle(slot==='ncaaa'?'NCAAA':'International',{create:true});
+    const fh=await slotDir.getFileHandle(fname,{create:true});
+    const w=await fh.createWritable();
+    await w.write(file);
+    await w.close();
+    return true;
+  }catch(e){ console.error('writeToLinkedFolder', e); return false; }
+}
+
+/* فحص تلقائي: عند العودة للنافذة + دوريًا (المجلد كل 45ث، GitHub كل 10 دقائق) */
+let lastScan=0, scanTimer=null;
+function autoRescan(){
+  if(document.hidden) return;
+  if(sourceMode==='github' && ghCfg){
+    if(Date.now()-lastScan < 10*60*1000) return;
+    ghScan(false);
+  }else if(sourceMode==='local' && dirHandle){
+    if(Date.now()-lastScan < 8000) return;
+    scanFolder(false);
+  }
+}
+window.addEventListener('focus', autoRescan);
+document.addEventListener('visibilitychange', ()=>{ if(!document.hidden) autoRescan(); });
+setInterval(autoRescan, 45000);
+
+const CERT_EXT=/\.(pdf|png|jpe?g|webp|gif|bmp|tiff?|heic|heif|svg)$/i;
+const IGNORE_FILES=/^(ضع_الشهادات_هنا\.txt|اقرأني\.txt|ضع_شهادة.*\.txt|desktop\.ini|thumbs\.db|\.ds_store)$/i;
+
+/* تحديد نوع الشهادة من اسم المجلد الفرعي (الأولوية الأولى في التصنيف) */
+function slotFromDirName(n){
+  const k=normAr(n);
+  if(k.includes('ncaaa')||k.includes('برامجي')||k.includes('وطني')||k.includes('محلي')||k.includes('هيئهتقويم')) return 'ncaaa';
+  if(k.includes('international')||k.includes('دولي')||k.includes('intl')||/abet|ahpgs|asiin|hceres|aacsb/.test(k)) return 'intl';
+  return null;
+}
+
+/* قراءة كل الملفات داخل مجلد البرنامج مهما كان العمق، مع وراثة تصنيف المجلد الفرعي */
+async function collectFiles(dirH, pathLabel, bucket, diag, depth=0, slotHint=null){
+  if(depth>4) return;
+  for await (const [name, h] of dirH.entries()){
+    if(h.kind==='directory'){
+      const hint=slotFromDirName(name)||slotHint;
+      await collectFiles(h, pathLabel+' / '+name, bucket, diag, depth+1, hint);
+      continue;
+    }
+    if(IGNORE_FILES.test(name)) continue;
+    if(CERT_EXT.test(name)) bucket.push({name, handle:h, slot:slotHint, parent:dirH});
+    else diag.skipped.push(pathLabel+' / '+name);
+  }
+}
+
+/* اكتشاف جذر الأرشيف الحقيقي: المجلد الذي تكون مجلداته الفرعية هي الكليات،
+   حتى لو اختار المستخدم المجلد الأب أو الجد */
+let archiveRoot=null;
+async function countCollegeMatches(dir){
+  const keys=new Set(programs.map(p=>normAr(p.college)));
+  let c=0;
+  for await (const [n,h] of dir.entries()){
+    if(h.kind==='directory' && keys.has(normAr(n))) c++;
+  }
+  return c;
+}
+async function detectArchiveRoot(){
+  if(await countCollegeMatches(dirHandle)>0) return dirHandle;
+  let best=null, bestC=0;
+  for await (const [n,h] of dirHandle.entries()){
+    if(h.kind!=='directory') continue;
+    const c=await countCollegeMatches(h);
+    if(c>bestC){ bestC=c; best=h; }
+  }
+  if(best) return best;
+  // مستوى إضافي (الجد)
+  for await (const [n,h] of dirHandle.entries()){
+    if(h.kind!=='directory') continue;
+    for await (const [n2,h2] of h.entries()){
+      if(h2.kind!=='directory') continue;
+      const c=await countCollegeMatches(h2);
+      if(c>bestC){ bestC=c; best=h2; }
+    }
+  }
+  return best||dirHandle;
+}
+
+async function scanFolder(showMsg=true){
+  if(!dirHandle) return;
+  lastScan=Date.now();
+  folderIndex={};
+  const folderNames=[];
+  const diag={skipped:[], stray:[]};
+  let fileCount=0;
+  try{
+    archiveRoot=await detectArchiveRoot();
+    for await (const [colName, colHandle] of archiveRoot.entries()){
+      if(colHandle.kind!=='directory'){
+        if(!IGNORE_FILES.test(colName)) diag.stray.push(colName);
+        continue;
+      }
+      const colKey=normAr(colName);
+      for await (const [progName, progHandle] of colHandle.entries()){
+        if(progHandle.kind!=='directory'){
+          if(!IGNORE_FILES.test(progName)) diag.stray.push(colName+' / '+progName);
+          continue;
+        }
+        const progKey=colKey+'::'+normAr(progName);
+        folderNames.push({key:progKey, display:colName+' / '+progName});
+        const bucket=folderIndex[progKey]=folderIndex[progKey]||[];
+        await collectFiles(progHandle, colName+' / '+progName, bucket, diag);
+        fileCount+=bucket.length;
+        if(!bucket.length) delete folderIndex[progKey];
+      }
+    }
+    window._scanDiag=diag;
+    finishScan(fileCount, folderNames, showMsg, 'folderStatus', 'المجلد');
+    const chip=document.getElementById('folderChip');
+    chip.classList.add('on');
+    document.getElementById('folderChipTxt').textContent=`المجلد مرتبط: ${dirHandle.name}`;
+    document.getElementById('rescanBtn').style.display='inline-flex';
+    chip.onclick=linkFolder;
+  }catch(e){ console.error(e); toast('حدث خطأ أثناء قراءة المجلد', true); }
+}
+
+/* خلاصة مشتركة بعد أي فحص (مجلد محلي أو GitHub) */
+function finishScan(fileCount, folderNames, showMsg, statusId, srcLabel){
+  const sig=JSON.stringify(Object.keys(folderIndex).sort().map(k=>[k,folderIndex[k].map(f=>f.name).sort()]));
+  const changed = sig!==window._folderSig;
+  const firstScan = window._folderSig===undefined;
+  window._folderSig=sig;
+  let missing=0;
+  programs.forEach(p=>{ missing += certStatusFor(p).missing.length; });
+  const matchedKeys=new Set();
+  programs.forEach(p=>{
+    const colKey=normAr(p.college);
+    [normAr(p.name+p.degree),normAr(p.name)].forEach(nk=>matchedKeys.add(colKey+'::'+nk));
+  });
+  const unmatchedList=folderNames.filter(f=>!matchedKeys.has(f.key) && folderIndex[f.key]);
+  window._unmatchedFolders=unmatchedList.map(f=>f.display);
+  const unmatched=unmatchedList.length;
+  const st=document.getElementById(statusId);
+  if(st) st.innerHTML =
+    `مرتبط ✓ — ${fileCount} شهادة` +
+    (missing?` · <span style="color:var(--bad)">${missing} شهادة ناقصة</span>`:` · <span style="color:var(--ok)">الأرشيف مكتمل</span>`) +
+    (unmatched?` · <span style="color:#7A4FA8">${unmatched} مجلد غير مطابق للأسماء</span>`:'');
+  if(changed || showMsg) renderView();
+  if(showMsg) toast(missing
+    ? `تم فحص ${srcLabel}: ${fileCount} شهادة موجودة، و${missing} شهادة مطلوب رفعها — التفاصيل في تبويب اكتمال المستندات`
+    : `تم فحص ${srcLabel}: ${fileCount} شهادة، وجميع شهادات الاعتمادات القائمة متوفرة ✓`);
+  else if(changed && !firstScan) toast(`تم اكتشاف تغييرات في ${srcLabel} وتحديث العرض تلقائيًا ✓`);
+}
+
+</script>
+<script>
+/* =========================================================
+   وضع GitHub: قراءة الشهادات من مستودع، والرفع/الحذف عبر رمز وصول
+   ========================================================= */
+let sourceMode = localStorage.getItem('ju_source_mode') || 'local';
+let ghCfg = JSON.parse(localStorage.getItem('ju_gh_cfg') || 'null'); // {owner,repo,branch,pat}
+let ghDirMap = {};   // colKey -> اسم مجلد الكلية الفعلي، progKey -> "كلية/برنامج" الفعلي
+let ghRootPrefix = '';
+
+function setSourceMode(m){
+  sourceMode=m;
+  localStorage.setItem('ju_source_mode', m);
+  const badge=document.getElementById('srcModeBadge');
+  if(badge) badge.textContent = m==='github' ? 'المصدر النشط: GitHub' : 'المصدر النشط: المجلد المحلي';
+  if(typeof updateDataBadge==='function') updateDataBadge();
+}
+
+async function ghApi(url, opts={}){
+  const headers={'Accept':'application/vnd.github+json', ...(opts.headers||{})};
+  if(ghCfg?.pat) headers['Authorization']='Bearer '+ghCfg.pat;
+  const r=await fetch(url, {...opts, headers});
+  if(!r.ok){
+    const t=await r.text().catch(()=> '');
+    throw new Error(`GitHub ${r.status}: ${t.slice(0,200)}`);
+  }
+  return r.json();
+}
+
+function ghSaveCfgFromInputs(){
+  const v=id=>document.getElementById(id).value.trim();
+  let owner=v('ghOwner'), repo=v('ghRepo');
+  // قبول لصق رابط كامل مثل https://github.com/owner/repo
+  const m=(owner+'/'+repo).match(/github\.com\/([^\/\s]+)\/([^\/\s]+)/);
+  if(m){ owner=m[1]; repo=m[2].replace(/\.git$/,''); }
+  if(!owner||!repo){ toast('أدخل اسم المالك واسم المستودع', true); return null; }
+  ghCfg={owner, repo, branch:v('ghBranch')||'main', pat:v('ghPat')};
+  localStorage.setItem('ju_gh_cfg', JSON.stringify(ghCfg));
+  return ghCfg;
+}
+
+async function ghConnect(){
+  if(!ghSaveCfgFromInputs()) return;
+  setSourceMode('github');
+  await ghFetchData(true);
+  await ghScan(true);
+  updateDataBadge();
+}
+function ghDisconnect(){
+  if(!confirm('سيتم فصل مستودع GitHub والعودة للمجلد المحلي. متابعة؟')) return;
+  ghCfg=null; localStorage.removeItem('ju_gh_cfg');
+  setSourceMode('local');
+  folderIndex={}; window._folderSig=undefined; window._unmatchedFolders=[]; window._scanDiag=null;
+  document.getElementById('ghStatus').textContent='غير متصل';
+  document.getElementById('folderChipTxt').textContent='ربط مجلد الشهادات';
+  document.getElementById('folderChip').classList.remove('on');
+  if(dirHandle) scanFolder(false); else renderView();
+  toast('تم فصل GitHub');
+}
+
+/* اكتشاف جذر الأرشيف داخل شجرة المستودع تلقائيًا */
+function ghDetectRoot(dirs){
+  const keys=new Set(programs.map(p=>normAr(p.college)));
+  const score=prefix=>{
+    let c=0;
+    dirs.forEach(d=>{
+      if(!d.startsWith(prefix)) return;
+      const rest=d.slice(prefix.length);
+      if(rest && !rest.includes('/') && keys.has(normAr(rest))) c++;
+    });
+    return c;
+  };
+  let best='', bestC=score('');
+  dirs.forEach(d=>{
+    const cand=d+'/';
+    const c=score(cand);
+    if(c>bestC){ bestC=c; best=cand; }
+  });
+  return best;
+}
+
+async function ghScan(showMsg=true){
+  if(!ghCfg) return;
+  lastScan=Date.now();
+  const st=document.getElementById('ghStatus');
+  if(st && showMsg) st.textContent='جارٍ الفحص…';
+  try{
+    const tree=await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/git/trees/${encodeURIComponent(ghCfg.branch)}?recursive=1`);
+    const dirs=tree.tree.filter(n=>n.type==='tree').map(n=>n.path);
+    const blobs=tree.tree.filter(n=>n.type==='blob');
+    ghRootPrefix=ghDetectRoot(dirs);
+
+    folderIndex={}; ghDirMap={};
+    const folderNames=[]; const seen=new Set();
+    const diag={skipped:[], stray:[]};
+    let fileCount=0;
+
+    for(const b of blobs){
+      if(!b.path.startsWith(ghRootPrefix)) continue;
+      const rel=b.path.slice(ghRootPrefix.length).split('/');
+      const fname=rel[rel.length-1];
+      if(IGNORE_FILES.test(fname)) continue;
+      if(rel.length<3){ // ملف في الجذر أو داخل الكلية مباشرة
+        if(CERT_EXT.test(fname)) diag.stray.push(rel.join(' / '));
+        continue;
+      }
+      const college=rel[0], progName=rel[1];
+      const colKey=normAr(college);
+      const progKey=colKey+'::'+normAr(progName);
+      if(!seen.has(progKey)){
+        seen.add(progKey);
+        folderNames.push({key:progKey, display:college+' / '+progName});
+        ghDirMap[colKey]=college;
+        ghDirMap[progKey]=college+'/'+progName;
+      }
+      if(!CERT_EXT.test(fname)){ diag.skipped.push(rel.join(' / ')); continue; }
+      // التصنيف من المجلدات الفرعية بين البرنامج والملف
+      let slot=null;
+      for(let i=2;i<rel.length-1;i++){ const s=slotFromDirName(rel[i]); if(s){ slot=s; break; } }
+      (folderIndex[progKey]=folderIndex[progKey]||[]).push({
+        name:fname, slot, gh:true, path:b.path, sha:b.sha,
+        url:`https://raw.githubusercontent.com/${ghCfg.owner}/${ghCfg.repo}/${encodeURIComponent(ghCfg.branch)}/${b.path.split('/').map(encodeURIComponent).join('/')}`
+      });
+      fileCount++;
+    }
+    window._scanDiag=diag;
+    if(tree.truncated) toast('تنبيه: المستودع ضخم وتم اقتطاع جزء من الشجرة', true);
+    finishScan(fileCount, folderNames, showMsg, 'ghStatus', 'مستودع GitHub');
+    document.getElementById('folderChip').classList.add('on');
+    document.getElementById('folderChipTxt').textContent=`GitHub: ${ghCfg.owner}/${ghCfg.repo}`;
+    document.getElementById('folderChip').onclick=()=>{ switchTab('settings'); };
+  }catch(e){
+    console.error(e);
+    if(st) st.textContent='فشل الاتصال';
+    toast(String(e.message).includes('404')
+      ? 'لم يُعثر على المستودع — تحقق من الاسم والفرع (وأن المستودع عام أو الرمز صحيح)'
+      : 'تعذر الاتصال بـ GitHub: '+e.message, true);
+  }
+}
+
+/* جلب ملف شهادة من GitHub كـ Blob (يدعم المستودعات الخاصة عبر الرمز) */
+async function ghFetchBlob(it){
+  if(ghCfg?.pat){
+    const r=await fetch(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${it.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(ghCfg.branch)}`,
+      {headers:{'Accept':'application/vnd.github.raw','Authorization':'Bearer '+ghCfg.pat}});
+    if(!r.ok) throw new Error('fetch failed');
+    return r.blob();
+  }
+  const r=await fetch(it.url);
+  if(!r.ok) throw new Error('fetch failed');
+  return r.blob();
+}
+
+function b64FromFile(file){
+  return new Promise((res,rej)=>{
+    const r=new FileReader();
+    r.onload=()=>res(String(r.result).split(',')[1]);
+    r.onerror=()=>rej(r.error);
+    r.readAsDataURL(file);
+  });
+}
+
+/* رفع شهادة إلى المستودع في المسار الصحيح */
+async function ghUpload(p, slot, file){
+  if(!ghCfg?.pat){
+    const dest=ghDirMap[normAr(p.college)+'::'+normAr(p.name+' - '+p.degree)]||ghDirMap[normAr(p.college)+'::'+normAr(p.name)];
+    const url=`https://github.com/${ghCfg.owner}/${ghCfg.repo}/tree/${ghCfg.branch}/${ghRootPrefix}${dest||''}`;
+    if(confirm('الرفع المباشر يتطلب إدخال رمز وصول (Personal Access Token) في إعدادات GitHub بالشاشة.\n\nهل تريد فتح مجلد البرنامج في موقع GitHub لرفع الملف يدويًا بالسحب والإفلات؟')){
+      window.open(url,'_blank');
+    }
+    return false;
+  }
+  const colKey=normAr(p.college);
+  const college=ghDirMap[colKey]||p.college;
+  const progPath=ghDirMap[colKey+'::'+normAr(p.name+' - '+p.degree)]
+              || ghDirMap[colKey+'::'+normAr(p.name)]
+              || `${college}/${p.name} - ${p.degree}`;
+  const path=`${ghRootPrefix}${progPath}/${slot==='ncaaa'?'NCAAA':'International'}/${file.name}`;
+  const apiPath=path.split('/').map(encodeURIComponent).join('/');
+  // إن وُجد ملف بنفس الاسم نحتاج sha للاستبدال
+  let sha;
+  try{
+    const ex=await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${apiPath}?ref=${encodeURIComponent(ghCfg.branch)}`);
+    sha=ex.sha;
+  }catch(_){}
+  await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${apiPath}`,{
+    method:'PUT',
+    body:JSON.stringify({
+      message:`رفع شهادة: ${p.name} (${slot==='ncaaa'?'NCAAA':'International'})`,
+      content:await b64FromFile(file),
+      branch:ghCfg.branch,
+      ...(sha?{sha}:{}) 
+    })
+  });
+  return true;
+}
+
+/* حذف ملف من المستودع */
+async function ghDelete(f){
+  if(!ghCfg?.pat){ toast('الحذف من GitHub يتطلب إدخال رمز الوصول في الإعدادات', true); return false; }
+  const apiPath=f.path.split('/').map(encodeURIComponent).join('/');
+  await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${apiPath}`,{
+    method:'DELETE',
+    body:JSON.stringify({message:'حذف شهادة: '+f.name, sha:f.sha, branch:ghCfg.branch})
+  });
+  return true;
+}
+
+/* =========================================================
+   البيانات المركزية: قراءة/نشر ملف programs.json من المستودع
+   ========================================================= */
+const GH_DATA_PATH='data/programs.json';
+let localDirty = localStorage.getItem('ju_local_dirty')==='1';
+function markDirty(v){ localDirty=v; localStorage.setItem('ju_local_dirty', v?'1':'0'); updateDataBadge(); }
+function updateDataBadge(){
+  const el=document.getElementById('ghDataStatus');
+  if(!el) return;
+  const sha=localStorage.getItem('ju_gh_data_sha');
+  el.innerHTML = sourceMode!=='github'||!ghCfg ? 'البيانات: محلية'
+    : localDirty ? '<span style="color:var(--bad)">لديك تعديلات لم تُنشر</span>'
+    : sha ? '<span style="color:var(--ok)">البيانات متطابقة مع المستودع ✓</span>'
+    : 'لا يوجد ملف بيانات في المستودع بعد';
+}
+function b64ToUtf8(b64){
+  const bin=atob(String(b64).replace(/\s/g,''));
+  return new TextDecoder('utf-8').decode(Uint8Array.from(bin,c=>c.charCodeAt(0)));
+}
+function utf8ToB64(str){
+  const bytes=new TextEncoder().encode(str);
+  let bin=''; bytes.forEach(b=>bin+=String.fromCharCode(b));
+  return btoa(bin);
+}
+
+async function ghFetchData(silent=false){
+  if(!ghCfg) return;
+  try{
+    const j=await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${GH_DATA_PATH}?ref=${encodeURIComponent(ghCfg.branch)}`);
+    const lastSha=localStorage.getItem('ju_gh_data_sha');
+    if(j.sha===lastSha && !silent){ toast('بيانات البرامج محدّثة بالفعل ✓'); return; }
+    if(j.sha===lastSha) { updateDataBadge(); return; }
+    const arr=JSON.parse(b64ToUtf8(j.content));
+    if(!Array.isArray(arr)||!arr.length) throw new Error('bad data');
+    if(localDirty && !confirm(`يوجد ملف بيانات محدّث في المستودع (${arr.length} برنامجًا).\nتعديلاتك المحلية غير المنشورة ستُستبدل.\n\nهل تريد جلب بيانات المستودع؟`)) return;
+    programs=ensureUids(arr);
+    saveState(false);
+    localStorage.setItem('ju_gh_data_sha', j.sha);
+    markDirty(false);
+    buildFilterOptions(); renderSettings(); renderView();
+    toast(`تم تحديث بيانات البرامج من المستودع (${programs.length} برنامجًا) ✓`);
+  }catch(e){
+    if(!silent && String(e.message).includes('404')) toast('لا يوجد ملف بيانات في المستودع — اضغط «نشر البيانات» لإنشائه', true);
+    updateDataBadge();
+  }
+}
+
+async function ghPublishData(){
+  if(!ghCfg?.pat){ toast('نشر البيانات يتطلب إدخال رمز الوصول PAT', true); return; }
+  if(!confirm(`سيتم نشر بيانات البرامج الحالية (${programs.length} برنامجًا) في المستودع،\nوستصبح هي البيانات التي يراها جميع الزملاء.\n\nمتابعة؟`)) return;
+  try{
+    let sha;
+    try{
+      const ex=await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${GH_DATA_PATH}?ref=${encodeURIComponent(ghCfg.branch)}`);
+      sha=ex.sha;
+    }catch(_){}
+    const res=await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${GH_DATA_PATH}`,{
+      method:'PUT',
+      body:JSON.stringify({
+        message:`تحديث بيانات البرامج (${programs.length} برنامجًا)`,
+        content:utf8ToB64(JSON.stringify(programs,null,1)),
+        branch:ghCfg.branch,
+        ...(sha?{sha}:{})
+      })
+    });
+    localStorage.setItem('ju_gh_data_sha', res.content.sha);
+    markDirty(false);
+    toast('تم نشر البيانات — سيراها الزملاء عند فتح الشاشة ✓');
+  }catch(e){ console.error(e); toast('فشل نشر البيانات: '+e.message, true); }
+}
+
+/* =========================================================
+   الرفع الجماعي: نقل شهادات المجلد المحلي إلى المستودع
+   ========================================================= */
+function ghUploadRoot(){ return ghRootPrefix || 'شهادات_الاعتماد/'; }
+
+async function collectLocalArchive(){
+  if(!dirHandle){
+    if(!window.showDirectoryPicker){ toast('يتطلب متصفح Chrome أو Edge', true); return null; }
+    try{ dirHandle=await showDirectoryPicker({mode:'read'}); await idbSet('kv','dirHandle',dirHandle); }
+    catch(_){ return null; }
+  }
+  if(await dirHandle.queryPermission({mode:'read'})!=='granted'){
+    if(await dirHandle.requestPermission({mode:'read'})!=='granted') return null;
+  }
+  const root=await detectArchiveRoot();
+  const out=[];
+  for await (const [colName,colH] of root.entries()){
+    if(colH.kind!=='directory') continue;
+    for await (const [progName,progH] of colH.entries()){
+      if(progH.kind!=='directory') continue;
+      const bucket=[], diag={skipped:[],stray:[]};
+      await collectFiles(progH, colName+' / '+progName, bucket, diag);
+      bucket.forEach(f=>out.push({college:colName, program:progName, slot:f.slot||classifySlot(f.name), name:f.name, handle:f.handle}));
+    }
+  }
+  return out;
+}
+
+async function ghBulkUpload(){
+  if(!ghCfg){ toast('اتصل بالمستودع أولًا', true); return; }
+  if(!ghCfg.pat){ toast('الرفع الجماعي يتطلب إدخال رمز الوصول PAT', true); return; }
+  const prog=document.getElementById('ghProgress');
+  prog.textContent='جارٍ قراءة المجلد المحلي…';
+  const items=await collectLocalArchive();
+  if(!items){ prog.textContent=''; return; }
+  if(!items.length){ prog.textContent=''; toast('لم يُعثر على شهادات في المجلد المحلي', true); return; }
+  // فحص المستودع أولًا لمعرفة الموجود مسبقًا
+  await ghScan(false);
+  const exists=new Set();
+  Object.values(folderIndex).forEach(arr=>arr.forEach(f=>exists.add(f.path)));
+
+  if(!confirm(`سيتم رفع شهادات مجلدك المحلي إلى المستودع (${items.length} ملفًا).\nالملفات الموجودة مسبقًا بنفس المسار سيتم تخطيها.\n\nقد تستغرق العملية عدة دقائق — لا تغلق الصفحة.\n\nمتابعة؟`)) { prog.textContent=''; return; }
+
+  let ok=0, skip=0, fail=0;
+  for(let i=0;i<items.length;i++){
+    const it=items[i];
+    prog.textContent=`جارٍ الرفع… ${i+1} / ${items.length}  (تم: ${ok} · متخطى: ${skip}${fail?' · فشل: '+fail:''})`;
+    const slotDir = it.slot==='intl' ? 'International' : it.slot==='ncaaa' ? 'NCAAA' : '';
+    const path = `${ghUploadRoot()}${it.college}/${it.program}/${slotDir?slotDir+'/':''}${it.name}`;
+    if(exists.has(path)){ skip++; continue; }
+    try{
+      const file=await it.handle.getFile();
+      if(file.size>90*1024*1024){ fail++; continue; }
+      const apiPath=path.split('/').map(encodeURIComponent).join('/');
+      await ghApi(`https://api.github.com/repos/${ghCfg.owner}/${ghCfg.repo}/contents/${apiPath}`,{
+        method:'PUT',
+        body:JSON.stringify({message:'رفع شهادة: '+it.program+' / '+it.name, content:await b64FromFile(file), branch:ghCfg.branch})
+      });
+      ok++;
+      await new Promise(r=>setTimeout(r,120)); // تفادي تعارض الطلبات المتتابعة
+    }catch(e){ console.error(path, e); fail++; }
+  }
+  prog.textContent=`اكتمل الرفع — تم: ${ok} · متخطى: ${skip}${fail?' · فشل: '+fail:''}`;
+  await ghScan(true);
+  toast(fail ? `اكتمل الرفع مع ${fail} ملفًا فشل رفعه` : `تم رفع ${ok} شهادة إلى المستودع بنجاح ✓`, !!fail);
+}
+</script>
+
+<script>
+/* =========== عارض الشهادات =========== */
+let currentBlobUrl=null;
+function slotLabel(slot, name){
+  if(slot==='ncaaa') return 'شهادة NCAAA';
+  if(slot==='intl') return 'الشهادة الدولية';
+  const n=(name||'').toLowerCase();
+  if(n.includes('ncaaa')||name.includes('برامجي')||name.includes('وطني')) return 'شهادة NCAAA';
+  if(/abet|ahpgs|asiin|hceres|aacsb|international/.test(n)||name.includes('دولي')) return 'الشهادة الدولية';
+  return name.replace(/\.[^.]+$/,'');
+}
+async function openCert(uid){
+  const p=programs.find(x=>x.uid===uid);
+  if(!p) return;
+  document.getElementById('certTitle').textContent=p.name;
+  document.getElementById('certSub').textContent=`${p.college} · ${p.degree}`;
+
+  const items=[];
+  (uploadsIndex[uid]||[]).forEach(f=>items.push({label:slotLabel(f.slot,f.name), name:f.name, src:'up', key:f.key}));
+  folderKeyMatches(p).forEach(f=>items.push({label:slotLabel(f.slot||'',f.name), name:f.name, src:f.gh?'gh':'dir', handle:f.handle, url:f.url, path:f.path}));
+
+  const tabsEl=document.getElementById('certTabs');
+  const viewEl=document.getElementById('certViewer');
+  document.getElementById('certModal').classList.add('open');
+
+  const cs=certStatusFor(p);
+  const missNote = cs.missing.length
+    ? `<div class="alert-strip red" style="margin:0 0 8px;flex:1 1 100%"><div class="ai">📤</div><div><b>مطلوب رفع:</b> ${cs.missing.map(esc).join(' + ')} — البرنامج لديه اعتماد قائم دون شهادة في الأرشيف</div></div>`
+    : '';
+  if(!items.length){
+    tabsEl.innerHTML='';
+    viewEl.innerHTML=missNote+`<div class="cert-empty">
+      <div class="ce-ico">📄</div>
+      <b>لا توجد شهادات مرتبطة بهذا البرنامج بعد</b>
+      <div style="font-size:12.5px;margin-top:4px">ارفع الشهادة من تبويب الإعدادات، أو ضع ملفها داخل مجلد البرنامج في مجلد الشهادات المرتبط ثم اضغط «إعادة فحص»</div>
+      <button class="btn btn-gold" onclick="closeCert();switchTab('settings')">الانتقال إلى الإعدادات</button>
+    </div>`;
+    return;
+  }
+  tabsEl.innerHTML=missNote+items.map((it,i)=>
+    `<button class="cert-tab" id="ctab${i}" onclick="showCertItem(${i})" title="${esc(it.name)}">
+       ${it.src==='dir'?'📁':it.src==='gh'?'🌐':'📎'} ${esc(it.label)}
+     </button>`).join('');
+  window._certItems=items;
+  showCertItem(0);
+}
+async function showCertItem(i){
+  const items=window._certItems||[];
+  const it=items[i]; if(!it) return;
+  document.querySelectorAll('.cert-tab').forEach((b,j)=>b.classList.toggle('active', j===i));
+  const viewEl=document.getElementById('certViewer');
+  viewEl.innerHTML=`<div style="text-align:center;padding:40px;color:var(--ink-3)">جارٍ تحميل الشهادة…</div>`;
+  try{
+    let blob, mime;
+    if(it.src==='up'){
+      const rec=await idbGet('files', it.key);
+      blob=rec.blob; mime=rec.type||'';
+    }else if(it.src==='gh'){
+      blob=await ghFetchBlob(it);
+      mime=blob.type||'';
+    }else{
+      const f=await it.handle.getFile();
+      blob=f; mime=f.type||'';
+    }
+    if(currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    currentBlobUrl=URL.createObjectURL(blob);
+    const isImg=/^image\//.test(mime)||/\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(it.name);
+    const noPreview=/\.(heic|heif|tiff?)$/i.test(it.name);
+    viewEl.innerHTML=(noPreview
+      ? `<div class="cert-empty"><div class="ce-ico">🖼️</div><b>هذا النوع (${esc(it.name.split('.').pop().toUpperCase())}) لا يدعم المتصفح معاينته مباشرة</b><div style="font-size:12.5px;margin-top:4px">الشهادة محسوبة ومربوطة بالبرنامج — نزّلها لعرضها، أو حوّلها إلى PDF/JPG للمعاينة داخل الشاشة</div></div>`
+      : isImg
+      ? `<div style="text-align:center"><img src="${currentBlobUrl}" style="max-width:100%;max-height:62vh;border-radius:12px;border:1px solid var(--line)" onerror="this.outerHTML='<div class=cert-empty><b>تعذرت معاينة الصورة — نزّل الملف لعرضه</b></div>'"></div>`
+      : `<iframe class="cert-frame" src="${currentBlobUrl}"></iframe>`)
+      +`<div class="cert-actions">
+          <a class="btn btn-ghost" href="${currentBlobUrl}" target="_blank" rel="noopener">فتح في نافذة مستقلة</a>
+          <a class="btn btn-line" href="${currentBlobUrl}" download="${esc(it.name)}">تنزيل الملف</a>
+          <span style="font-size:12px;color:var(--ink-3);align-self:center">${esc(it.name)}</span>
+        </div>`;
+  }catch(e){
+    console.error(e);
+    viewEl.innerHTML=`<div class="cert-empty"><div class="ce-ico">⚠️</div><b>تعذر فتح الملف</b><div style="font-size:12.5px;margin-top:4px">أعد ربط مجلد الشهادات ثم حاول مجددًا</div></div>`;
+  }
+}
+function closeCert(){
+  document.getElementById('certModal').classList.remove('open');
+  if(currentBlobUrl){ URL.revokeObjectURL(currentBlobUrl); currentBlobUrl=null; }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeCert(); });
+
+/* =========== تصدير / استيراد =========== */
+const EXPORT_HEAD1=['م','المجال الاكاديمي','الكلية','اسم البرنامج','الدرجة العلمية','حالة البرنامج','هل تم تخريج دفعة من البرنامج','آخر دفعة','اتاحة القبول للفصل القادم','أهلية البرنامج','NCAAA','','','','International','','','',''];
+const EXPORT_HEAD2=['','','','','','','','','','','حالة الاعتماد','تاريخ البداية','تاريخ الانتهاء','التثبت','جهة الاعتماد','حالة الاعتماد','تاريخ البداية','تاريخ الانتهاء','التثبت'];
+function rowsFor(list){
+  return list.map((p,i)=>[i+1,p.field,p.college,p.name,p.degree,p.status,p.graduated,p.lastBatch,p.admission,p.eligibility,
+    p.ncaaaStatus,p.ncaaaStart,p.ncaaaEnd,p.ncaaaVerified,p.intlBody,p.intlStatus,p.intlStart,p.intlEnd,p.intlVerified]);
+}
+function buildWb(list){
+  const ws=XLSX.utils.aoa_to_sheet([EXPORT_HEAD1,EXPORT_HEAD2,...rowsFor(list)]);
+  ws['!merges']=[
+    ...Array.from({length:10},(_,c)=>({s:{r:0,c},e:{r:1,c}})),
+    {s:{r:0,c:10},e:{r:0,c:13}},{s:{r:0,c:14},e:{r:0,c:18}},
+  ];
+  ws['!cols']=EXPORT_HEAD2.map((_,c)=>({wch:c===3?32:c===2?24:14}));
+  if(!ws['!props']) ws['!props']={};
+  const wb=XLSX.utils.book_new();
+  wb.Workbook={Views:[{RTL:true}]};
+  XLSX.utils.book_append_sheet(wb,ws,'All Programs');
+  return wb;
+}
+function exportViewExcel(){
+  XLSX.writeFile(buildWb(filteredPrograms()),`اعتماد_البرامج_عرض_${todayISO()}.xlsx`);
+  toast('تم تصدير البيانات المعروضة إلى Excel');
+}
+function exportSettingsExcel(){
+  XLSX.writeFile(buildWb(programs),`اعتماد_البرامج_كامل_${todayISO()}.xlsx`);
+  toast('تم تصدير كامل قاعدة البيانات إلى Excel');
+}
+function exportJSON(){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(programs,null,1)],{type:'application/json'}));
+  a.download=`اعتماد_البرامج_نسخة_احتياطية_${todayISO()}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('تم حفظ نسخة احتياطية JSON');
+}
+function importJSON(input){
+  const f=input.files[0]; input.value='';
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const data=JSON.parse(r.result);
+      if(!Array.isArray(data)||!data[0]?.name) throw 0;
+      programs=ensureUids(data);
+      saveState(); renderSettings(); buildFilterOptions(); renderView();
+      toast(`تمت استعادة ${programs.length} برنامجًا من النسخة الاحتياطية`);
+    }catch(_){ toast('ملف JSON غير صالح', true); }
+  };
+  r.readAsText(f);
+}
+function xlDate(v){
+  if(v==null||v==='') return '';
+  if(typeof v==='number'){ const d=XLSX.SSF.parse_date_code(v); if(d) return `${d.y}-${String(d.m).padStart(2,'0')}-${String(d.d).padStart(2,'0')}`; }
+  const d=new Date(v); if(!isNaN(d)) return d.toISOString().slice(0,10);
+  return String(v);
+}
+function importExcel(input){
+  const f=input.files[0]; input.value='';
+  if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const wb=XLSX.read(r.result,{type:'array',cellDates:false});
+      const shName=wb.SheetNames.includes('All Programs')?'All Programs':wb.SheetNames[0];
+      const rows=XLSX.utils.sheet_to_json(wb.Sheets[shName],{header:1,defval:''});
+      const clean=v=>String(v??'').replace(/\n/g,' ').trim()
+        .replace(/^غيرمفعل$/,'غير مفعل').replace(/^لايوجد$/,'لا يوجد');
+      // نمطان: الملف الأصلي (24 عمودًا مع أعمدة تحقق) أو الملف المُصدَّر من هذه الشاشة (19 عمودًا)
+      const orig = (rows[0]||[]).length>=22;
+      const col = orig
+        ? {field:1,college:2,name:3,degree:4,status:5,grad:6,batch:7,adm:8,elig:10,nS:11,nB:12,nE:13,nV:14,iB:17,iS:18,iSt:19,iE:20,iV:21}
+        : {field:1,college:2,name:3,degree:4,status:5,grad:6,batch:7,adm:8,elig:9,nS:10,nB:11,nE:12,nV:13,iB:14,iS:15,iSt:16,iE:17,iV:18};
+      const out=[];
+      for(let ri=2;ri<rows.length;ri++){
+        const rw=rows[ri];
+        const name=clean(rw[col.name]);
+        if(!name) continue;
+        out.push({
+          id:out.length+1,
+          field:clean(rw[col.field]),college:clean(rw[col.college]),name,degree:clean(rw[col.degree]),
+          status:clean(rw[col.status]),graduated:clean(rw[col.grad]),lastBatch:clean(rw[col.batch]),
+          admission:clean(rw[col.adm]),eligibility:clean(rw[col.elig]),
+          ncaaaStatus:clean(rw[col.nS]),ncaaaStart:xlDate(rw[col.nB]),ncaaaEnd:xlDate(rw[col.nE]),ncaaaVerified:clean(rw[col.nV]),
+          intlBody:clean(rw[col.iB]),intlStatus:clean(rw[col.iS]),intlStart:xlDate(rw[col.iSt]),intlEnd:xlDate(rw[col.iE]),intlVerified:clean(rw[col.iV]),
+        });
+      }
+      if(!out.length) throw 0;
+      if(!confirm(`سيتم استبدال البيانات الحالية بـ ${out.length} برنامجًا من الملف المستورد. متابعة؟`)) return;
+      programs=ensureUids(out);
+      saveState(); renderSettings(); buildFilterOptions(); renderView();
+      toast(`تم استيراد ${out.length} برنامجًا بنجاح`);
+    }catch(e){ console.error(e); toast('تعذر قراءة ملف الإكسيل — تأكد من مطابقة هيكل الأعمدة', true); }
+  };
+  r.readAsArrayBuffer(f);
+}
+
+/* =========== التهيئة =========== */
+(async function init(){
+  loadState();
+  document.getElementById('todayLine').textContent='آخر تحديث للعرض: '+new Date().toLocaleDateString('ar-SA-u-ca-gregory',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('printDate').textContent='تاريخ الطباعة: '+new Date().toLocaleDateString('ar-SA-u-ca-gregory');
+  await refreshUploadsIndex();
+  buildFilterOptions();
+  renderView();
+  renderSettings();
+  // استعادة إعدادات GitHub في الحقول
+  if(ghCfg){
+    document.getElementById('ghOwner').value=ghCfg.owner||'';
+    document.getElementById('ghRepo').value=ghCfg.repo||'';
+    document.getElementById('ghBranch').value=ghCfg.branch||'main';
+    document.getElementById('ghPat').value=ghCfg.pat||'';
+  }
+  setSourceMode(sourceMode);
+  if(sourceMode==='github' && ghCfg){
+    await ghFetchData(true);
+    await ghScan(false);
+  }else{
+    await tryRestoreFolder();
+  }
+  updateDataBadge();
+})();
+</script>
+</body>
+</html>
